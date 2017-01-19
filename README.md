@@ -5,7 +5,7 @@ Petites instructions pour ceux qui ne sont pas familiers avec les systèmes de v
 Je conseille d'installer [SourceTree](https://www.sourcetreeapp.com/). Git peut être utilisé en command line, mais c'est toujours pratique d'avoir un outil visuel.
 
 ### Cloner le repository
-Cloner le repository à l'endroit de votre choix. ([Documentation](https://confluence.atlassian.com/sourcetreekb/clone-a-repository-into-sourcetree-780870050.html) pour SourceTree) en utilisant l'URL HTTPS ou SSH sur cette page. Je conseille HTTPS pour ceux qui ne savent pas comment générer des clés SSH. Vous allez seulement devoir entrer votre mot de passe et username plus souvent. Si certains veulent des informations pour le SSH, je peux vous expliquer.
+Cloner le repository à l'endroit de votre choix. ([Documentation](https://confluence.atlassian.com/sourcetreekb/clone-a-repository-into-sourcetree-780870050.html) pour SourceTree) en utilisant l'URL HTTPS ou SSH sur cette page. (VOIR EN HAUT À DROITE->C'EST LE BOUTON VERT) Je conseille HTTPS pour ceux qui ne savent pas comment générer des clés SSH. Vous allez seulement devoir entrer votre mot de passe et username plus souvent. Si certains veulent des informations pour le SSH, je peux vous expliquer.
 
 ### Procédure pour travailler
 1. Faire **pull** avant de commencer à travailler
