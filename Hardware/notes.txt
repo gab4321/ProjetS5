@@ -1,1 +1,0 @@
-Déposez ici tout ce qui est relatif au hardware (calculs associés aux boutons, micro, schéma, etc.). Faites au besoin de nouveaux sous-dossiers
