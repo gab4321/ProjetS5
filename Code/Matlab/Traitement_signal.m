@@ -19,7 +19,8 @@ log_intensite = zeros(1,n_trames);
 
 decalage = 256;
 autocorr_trame = zeros(1,2*decalage+1);
-autocorr_entier = zeros
+
+deviation_peak_max = 6;
 % Analyse du son par trames
 for i = 1:n_trames
     
@@ -45,16 +46,35 @@ for i = 1:n_trames
             end
             autocorr_trame(v+decalage+1) = somme;
         end
-        plot(autocorr_trame)
         
         % Détection de peaks
         % Il faut tenir compte de la valeur absolue des peaks (>1)
         % Il faut vérifier la périodicité
         
-        % Détection du premier peak
+        % Détection de peaks
+        n_peaks=0;
+        for k = 3:(length(autocorr_trame)-2)
+            if(autocorr_trame(k)>autocorr_trame(k-1) && autocorr_trame(k)>autocorr_trame(k-2))
+                if(autocorr_trame(k)>autocorr_trame(k+1) && autocorr_trame(k)>autocorr_trame(k+2))
+                    peaks(n_peaks+1)=k;
+                    n_peaks=n_peaks+1;
+                end
+            end
+        end
         
+        % Détection de la périodicité des peaks
+        periodique = 1;
+        for k=2:(length(peaks)-1)
+            ecart = abs((peaks(k)-peaks(k-1))-(peaks(k+1)-peaks(k)));
+            if(ecart>deviation_peak_max)
+                periodique = 0;
+            end
+        end
         
-
+                figure(1)
+        plot(autocorr_trame);
+        hold on
+        plot(peaks,autocorr_trame(peaks),'ro')
         
     end
 end
