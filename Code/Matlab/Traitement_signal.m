@@ -7,8 +7,8 @@ clc
 %[Freq800,Fe] = audioread('800.wav');
 %Freq800 = Freq800(1:1000,1);
 
-[LA,FeLA] = audioread('_LA.wav');
-%[LA,FeLA] = audioread('Enregistrement.m4a');
+%[LA,FeLA] = audioread('_LA.wav');
+[LA,FeLA] = audioread('Enregistrement.m4a');
 
 seuil = 0.04;
 long_trame = 1024;
@@ -21,6 +21,7 @@ decalage = 256;
 autocorr_trame = zeros(1,2*decalage+1);
 
 deviation_peak_max = 6;
+trame_periodique = zeros(1,long_trame);
 % Analyse du son par trames
 for i = 1:n_trames
     
@@ -69,11 +70,19 @@ for i = 1:n_trames
                 periodique = 0;
             end
         end
+        trame_periodique(i) = periodique;
+        
+        % Détection de la note
+        
         
         figure(1)
         plot(autocorr_trame);
         hold on
         plot(peaks,autocorr_trame(peaks),'ro')
         
+        
     end
 end
+
+figure(2)
+plot(trame_periodique)
