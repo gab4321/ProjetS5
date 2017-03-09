@@ -46,12 +46,11 @@ for i = 1:n_trames
             end
             autocorr_trame(v+decalage+1) = somme;
         end
+       
         
         % Détection de peaks
-        % Il faut tenir compte de la valeur absolue des peaks (>1)
-        % Il faut vérifier la périodicité
-        
-        % Détection de peaks
+        % TODO : S'assurer que la valeur absolue des peaks dépasse un
+        % certain seuil à déterminer
         n_peaks=0;
         for k = 3:(length(autocorr_trame)-2)
             if(autocorr_trame(k)>autocorr_trame(k-1) && autocorr_trame(k)>autocorr_trame(k-2))
@@ -71,7 +70,7 @@ for i = 1:n_trames
             end
         end
         
-                figure(1)
+        figure(1)
         plot(autocorr_trame);
         hold on
         plot(peaks,autocorr_trame(peaks),'ro')
