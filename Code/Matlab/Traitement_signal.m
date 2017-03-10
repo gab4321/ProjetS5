@@ -8,7 +8,8 @@ clc
 %Freq800 = Freq800(1:1000,1);
 
 %[LA,FeLA] = audioread('_LA.wav');
-[LA,FeLA] = audioread('Enregistrement.m4a');
+%[LA,FeLA] = audioread('Enregistrement.m4a');
+[LA,FeLA] = audioread('DO#.wav');
 
 seuil = 0.04;
 long_trame = 1024;
@@ -53,9 +54,9 @@ for i = 1:n_trames
         % TODO : S'assurer que la valeur absolue des peaks dépasse un
         % certain seuil à déterminer
         n_peaks=0;
-        for k = 3:(length(autocorr_trame)-2)
-            if(autocorr_trame(k)>autocorr_trame(k-1) && autocorr_trame(k)>autocorr_trame(k-2))
-                if(autocorr_trame(k)>autocorr_trame(k+1) && autocorr_trame(k)>autocorr_trame(k+2))
+        for k = 4:(length(autocorr_trame)-3)
+            if(autocorr_trame(k)>autocorr_trame(k-1) && autocorr_trame(k)>autocorr_trame(k-2) && autocorr_trame(k)>autocorr_trame(k-3))
+                if(autocorr_trame(k)>autocorr_trame(k+1) && autocorr_trame(k)>autocorr_trame(k+2) && autocorr_trame(k)>autocorr_trame(k+3))
                     peaks(n_peaks+1)=k;
                     n_peaks=n_peaks+1;
                 end
