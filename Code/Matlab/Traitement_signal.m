@@ -7,30 +7,30 @@ clc
 %[Freq800,Fe] = audioread('800.wav');
 %Freq800 = Freq800(1:1000,1);
 
-%[LA,FeLA] = audioread('Enregistrement.m4a');
-
-
-% [LA,FeLA] = audioread('DO5.wav'); %Pas correct
-% [LA,FeLA] = audioread('DO#.wav');
-% [LA,FeLA] = audioread('Re.wav');
-% [LA,FeLA] = audioread('Re#.wav');
-% [LA,FeLA] = audioread('Mi.wav'); % Pas correct
-% [LA,FeLA] = audioread('Fa.wav');
-% [LA,FeLA] = audioread('_Fa#.wav');
-% [LA,FeLA] = audioread('_sol.wav'); % Pas correct
-% [LA,FeLA] = audioread('_sol#.wav');
-% [LA,FeLA] = audioread('_LA.wav');
-% [LA,FeLA] = audioread('LA#.wav'); % Fonctionne, mais peaks en bas
-% [LA,FeLA] = audioread('Si.wav');
-
- [LA,FeLA] = audioread('Gamme majeur Do.wav'); % Combination d'aberrations
+% [note_audio,Fe] = audioread('Enregistrement.m4a');
+% 
+% 
+% [note_audio,Fe] = audioread('DO5.wav'); %Pas correct
+% [note_audio,Fe] = audioread('DO#.wav');
+% [note_audio,Fe] = audioread('Re.wav');
+% [note_audio,Fe] = audioread('Re#.wav');
+% [note_audio,Fe] = audioread('Mi.wav'); % Pas correct
+% [note_audio,Fe] = audioread('Fa.wav');
+% [note_audio,Fe] = audioread('_Fa#.wav');
+ [note_audio,Fe] = audioread('_sol.wav'); % Pas correct
+% [note_audio,Fe] = audioread('_sol#.wav');
+% [note_audio,Fe] = audioread('_LA.wav');
+% [note_audio,Fe] = audioread('LA#.wav'); % Fonctionne, mais peaks en bas
+% [note_audio,Fe] = audioread('Si.wav');
+% 
+% [note_audio,Fe] = audioread('Gamme majeur Do.wav'); % Combination d'aberrations
 
 
 
 seuil = 0.04;
-long_trame = 1024;
+long_trame = 2048;
 trame = zeros(1,long_trame);
-n_trames = ceil(length(LA)/long_trame);
+n_trames = ceil(length(note_audio)/long_trame);
 note_det = 0;
 log_intensite = zeros(1,n_trames);
 
@@ -38,14 +38,16 @@ decalage = 256;
 autocorr_trame = zeros(1,2*decalage+1);
 
 deviation_peak_max = 6;
-trame_periodique = zeros(1,long_trame);
+trame_periodique = zeros(1,n_trames);
 n_trames_son = 0;
 n_trames_to_skip = 3;
+
+freq_trames=zeros(1,n_trames);
 % Analyse du son par trames
 for i = 1:n_trames
     
     % Formation de la trame
-    trame  = LA(long_trame*(i-1)+1:long_trame*i);
+    trame  = note_audio(long_trame*(i-1)+1:long_trame*i);
     
     % Détection d'intensité
     intensite = mean(abs(trame));
@@ -95,9 +97,15 @@ for i = 1:n_trames
                     periodique = 0;
                 end
             end
+            
+            % Filtrage de la périodicité des peaks
             trame_periodique(i) = periodique;
             
             % Détection de la note
+            FFT_trame = fft(hanning(long_trame)'.*trame);
+            mag_FFT_trame =  abs(FFT_trame);
+            [amax,imax] = max(mag_FFT_trame);
+            freq_trames(i) = (imax-1)/(long_trame)*Fe;
             
             
             figure(1)
@@ -106,9 +114,17 @@ for i = 1:n_trames
             plot(peaks,autocorr_trame(peaks),'ro')
             
             peaks
+            delta_peaks = diff(peaks)
         end
     end
 end
 
 figure(2)
 area(trame_periodique)
+
+figure(3)
+%plot(trame_periodique.*freq_trames)
+plot(freq_trames)
+
+figure(4)
+plot(log_intensite)
