@@ -64,8 +64,8 @@ for i = 1:n_trames
             % Filtrage de la trame
             % TODO
             
-            % Autocorrélation
             if(n_trame_analyse<=n_trames_to_keep)
+                % Autocorrélation
                 somme = 0;
                 trame_pad = [zeros(1,decalage), trame, zeros(1,decalage)];
                 for v = -decalage:decalage
@@ -114,11 +114,12 @@ for i = 1:n_trames
             
             
             % Détection de la note
-            FFT_trame = fft(hanning(long_trame)'.*trame);
-            mag_FFT_trame =  abs(FFT_trame);
-            [amax,imax] = max(mag_FFT_trame);
-            freq_trames(i) = (imax-1)/(long_trame)*Fe;
-            
+            if(periodique)
+                FFT_trame = fft(hanning(long_trame)'.*trame);
+                mag_FFT_trame =  abs(FFT_trame);
+                [amax,imax] = max(mag_FFT_trame);
+                freq_trames(i) = (imax-1)/(long_trame)*Fe;
+            end
             
             figure(1)
             plot(autocorr_trame);
@@ -142,3 +143,8 @@ plot(freq_trames)
 
 figure(4)
 plot(log_intensite)
+
+
+
+%% Fonctions
+
