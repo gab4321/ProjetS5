@@ -4,7 +4,7 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/ti/ccsv7/tools/compiler/c6000_7.4.20
+CG_TOOL_ROOT := C:/ti/c6000_7.4.20
 
 GEN_OPTS__FLAG := 
 GEN_CMDS__FLAG := 
@@ -149,13 +149,13 @@ all: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 TestCorr1.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: C6000 Linker'
-	"C:/ti/ccsv7/tools/compiler/c6000_7.4.20/bin/cl6x" -mv6700 --abi=coffabi -g --define=CHIP_6713 --define=c6713 --diag_warning=225 --diag_wrap=off --display_error_number --mem_model:const=far --mem_model:data=far --printf_support=full -z -m"TestCorr1.map" --stack_size=0x1000 --heap_size=0x1000 -i"C:/ti/ccsv7/tools/compiler/c6000_7.4.20/lib" -i"C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --xml_link_info="TestCorr1_linkInfo.xml" --rom_model -o "TestCorr1.out" $(ORDERED_OBJS)
+	"C:/ti/c6000_7.4.20/bin/cl6x" -mv6700 --abi=coffabi -g --define=CHIP_6713 --define=c6713 --diag_wrap=off --display_error_number --diag_warning=225 --mem_model:data=far --mem_model:const=far --printf_support=full -z -m"TestCorr1.map" --stack_size=0x1000 --heap_size=0x1000 -i"C:/ti/c6000_7.4.20/lib" -i"C:/ti/c6000_7.4.20/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="TestCorr1_linkInfo.xml" --rom_model -o "TestCorr1.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 TestCorr1.hex: $(EXE_OUTPUTS)
 	@echo 'Invoking: C6000 Hex Utility'
-	"C:/ti/ccsv7/tools/compiler/c6000_7.4.20/bin/hex6x"  -o "TestCorr1.hex" $(EXE_OUTPUTS__QUOTED)
+	"C:/ti/c6000_7.4.20/bin/hex6x"  -o "TestCorr1.hex" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building: $@'
 	@echo ' '
 

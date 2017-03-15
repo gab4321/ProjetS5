@@ -6,11 +6,11 @@
 
 //SETTING DU DAC
 Uint32 fs=DSK6713_AIC23_FREQ_8KHZ; //set sampling rate 8KHZ
-Uint16 inputsource=0x0015; // select input
+Uint16 inputsource=0x0011; // select input
 
 //DEFINE DES ADRESSES MEMOIRE DES PERIPHERIQUES
 #define ADC_ADRESS 0XB0380000 //pour lADC (pas adresse officielle)
-#define CPLD_USER_REG 0x90080000 //pour le CPLD
+#define CPLD_USER_REG (unsigned int *) 0x90080000   //adresse du USER_REG du CPLD pour LED et Switch
 #define SDRAM_ADRESS_BASE 0x80000000 //adresse de la sdram
 
 //DEFINE DES ADRESSES MEMOIRE DES REGISTRES
@@ -52,6 +52,7 @@ int etat3 = 0;
 int etat4 = 0;
 int compLED = 0;
 int firstPlay = 1;
+int FlagLed0 = 0;
 
 //VARIABLES POUR lIMPLEMENTATION DUN FILTRE FIR POUR  TESTER
 unsigned int* ActualPos;
@@ -88,10 +89,10 @@ void SetupAll();
 
 //VARIABLES POUR LE TEST DE CORRELATION
 //defines
-#define Ncorr 15         //N
-#define Ndecalage 14     //au choix / maximum N-1
-#define Nrep 29         //2*decalage+1
-#define Npadd 43        //N+2*decalage
+#define Ncorr 256         //N
+#define Ndecalage 100     //au choix / maximum N-1
+#define Nrep 201         //2*decalage+1
+#define Npadd 456        //N+2*decalage
 //variables
 int ncorr = (int)Ncorr;
 int ndecalage = (int)Ndecalage;
@@ -116,7 +117,7 @@ int IsSound = 0;
 //fonctions
 void TestIntensite(int *TestAmp, int ntestSon);
 void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep);
-int debugMic = 1;
+int debugMic = 0;
 int scale = 0.60;
 int TabPeak[Nrep];
 int nVerif = 2; //doit detecter n intervalles egales pour conclure que cest periodique
@@ -124,13 +125,13 @@ int nVerif = 2; //doit detecter n intervalles egales pour conclure que cest peri
 //PROGRAMME PRINCIPAL (LOOP)
 int main(){
 
-    //SetupAll();
+    SetupAll();
 
     //DEBUG CORRELATION
     //padding du vecteur de donnees pour faire la correlation
-    CorrManip(VectCorr, VectPadder);
+//    CorrManip(VectCorr, VectPadder);
     //correlation du vecteur paddr en ASM vecteur de sortie est VectRep
-    CorrASM(VectPadder, VectRep, ncorr, ndecalage, nrep, npadd);
+//    CorrASM(VectPadder, VectRep, ncorr, ndecalage, nrep, npadd);
 
     // A
     //TEST DETECTION PERIODICITE DES SONS ENREGISTRÉS
@@ -150,6 +151,7 @@ int main(){
         {
             CorrManip(VectCorr, VectPadder);
             CorrASM(VectPadder, VectRep, ncorr, ndecalage, nrep, npadd);
+
             TestPeriodicite(VectRep,TabPeak, nrep);
             IsSound = 0;
             TrameEnr = 0;
@@ -204,7 +206,7 @@ interrupt void ISRTimer1()
     }
     else if(IsSound == 1 && TrameEnr == 0)
     {
-        ValADCIn = input_left_sample();
+        ValADCIn = input_sample();
 
         VectCorr[nbEchADC] = (int)(ValADCIn * GainNum);
 
@@ -226,7 +228,7 @@ interrupt void ISRTimer1()
 
         if(nbEchADC > 4000)
         {
-            printf("amplitude %lf",(int)ValADCIn);
+            printf("amplitude %i \n",(int)ValADCIn);
             nbEchADC = 0;
         }
     }
@@ -243,10 +245,13 @@ void TestIntensite(int *TestAmp, int ntestson)
 
     for(i = 0; i < ntestson; i++)
     {
+        if(TestAmp[i] <0)
+        {TestAmp[i] = -1*TestAmp[i];}
         intensite = intensite + TestAmp[i];
     }
 
     intensite = intensite/ntestson;
+
 
     if(intensite > SeuilSon)
     {
@@ -254,7 +259,16 @@ void TestIntensite(int *TestAmp, int ntestson)
     }
     else
     {
-        printf("pas de son");  //a remplacer par des lumieres
+//        printf("pas de son\n");  //a remplacer par des lumieres
+        if(FlagLed0==0)
+        {
+
+            *CPLD_USER_REG &=~0x06;      //éteindre led1 & 2
+            *CPLD_USER_REG |=0x01;      //allumer led0
+            FlagLed0 =1;
+        }
+
+
     }
 }
 
@@ -312,11 +326,17 @@ void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep)
 
     if(detect == 1)
     {
-        printf("signal periodique "); //a remplacer par des lumieres
+//        printf("signal periodique\n "); //a remplacer par des lumieres
+        FlagLed0 = 0;
+        *CPLD_USER_REG &=~0x01;      //éteindre led0
+        *CPLD_USER_REG |=0x02;      //allumer led1
     }
     else
     {
-        printf("signal non periodique "); //a remplacer par des lumieres
+//        printf("signal non periodique \n"); //a remplacer par des lumieres
+        FlagLed0 = 0;
+        *CPLD_USER_REG &=~0x01;      //éteindre led0
+        *CPLD_USER_REG |=0x03;      //allumer led2
     }
 }
 
