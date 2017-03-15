@@ -17,9 +17,9 @@ clc
 % [note_audio,Fe] = audioread('Mi.wav'); % Pas correct
 % [note_audio,Fe] = audioread('Fa.wav');
 % [note_audio,Fe] = audioread('_Fa#.wav');
-% [note_audio,Fe] = audioread('_sol.wav'); % Pas correct
+ [note_audio,Fe] = audioread('_sol.wav'); % Pas correct
 % [note_audio,Fe] = audioread('_sol#.wav');
- [note_audio,Fe] = audioread('_LA.wav');
+% [note_audio,Fe] = audioread('_LA.wav');
 % [note_audio,Fe] = audioread('LA#.wav'); % Fonctionne, mais peaks en bas
 % [note_audio,Fe] = audioread('Si.wav');
 % 
@@ -42,7 +42,7 @@ deviation_ecart_peak_max = 6;
 trame_periodique = zeros(1,n_trames);
 n_trames_son = 0;
 n_trames_to_skip = 4;
-n_trames_to_keep = 3;
+n_trames_to_keep = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
 
 freq_trames=zeros(1,n_trames);
 % Analyse du son par trames
@@ -61,11 +61,9 @@ for i = 1:n_trames
         
         % On ignore les premières trames, pour n'obtenir que le régime
         % transitoire
-        if(n_trames_son>n_trames_to_skip && ((n_trames_son-n_trames_to_skip)<n_trames_to_keep))
+        if(n_trames_son>n_trames_to_skip && ((n_trames_son-n_trames_to_skip)<=n_trames_to_keep))
 
             % Autocorrélation
-            % A faire sans la fonction xcorr
-            % Il ne faut garder que quelques peaks possibles
             somme = 0;
             trame_pad = [zeros(1,decalage), trame, zeros(1,decalage)];
             for v = -decalage:decalage
@@ -93,14 +91,10 @@ for i = 1:n_trames
             % peaks
             n_trame = n_trames_son-n_trames_to_skip;
             if((n_trame)==1)
-               log_peaks=zeros(3,n_peaks); 
+               log_peaks=zeros(n_trames_to_keep,n_peaks); 
             end
             
             log_peaks(n_trame,:)=peaks;
-            
-            
-            % Filtrage de la périodicité des peaks
-            trame_periodique(i) = periodique;
             
             % Détection de la note
             FFT_trame = fft(hanning(long_trame)'.*trame);
@@ -114,11 +108,25 @@ for i = 1:n_trames
             hold on
             plot(peaks,autocorr_trame(peaks),'ro')
             
-            peaks
-        elseif(((n_trames_son-n_trames_to_skip)==n_trames_to_keep))
-            % Lorsqu'on a assez d'informations, on fait la détection
-            
+            peaks;
+        elseif(((n_trames_son-n_trames_to_skip)>n_trames_to_keep))
+           % Détection de la périodicité
+           periodique=1;
+            for k=1:length(log_peaks)
+                if(abs(log_peaks(1,k)-log_peaks(2,k))>deviation_ecart_peak_max)
+                    periodique=0;
+                end
+            end
            
+           
+           
+           periodique=1;
+            % Filtrage de la périodicité des peaks
+            if(periodique==1)
+                trame_periodique(i-n_trames_to_keep:i) = ones(1,n_trames_to_keep+1);
+            end
+            log_peaks
+            
         end
         
     end
