@@ -17,13 +17,13 @@ clc
 % [note_audio,Fe] = audioread('Mi.wav'); % Pas correct
 % [note_audio,Fe] = audioread('Fa.wav');
 % [note_audio,Fe] = audioread('_Fa#.wav');
- [note_audio,Fe] = audioread('_sol.wav'); % Pas correct
+% [note_audio,Fe] = audioread('_sol.wav'); % Pas correct
 % [note_audio,Fe] = audioread('_sol#.wav');
 % [note_audio,Fe] = audioread('_LA.wav');
 % [note_audio,Fe] = audioread('LA#.wav'); % Fonctionne, mais peaks en bas
 % [note_audio,Fe] = audioread('Si.wav');
 % 
-% [note_audio,Fe] = audioread('Gamme majeur Do.wav'); % Combination d'aberrations
+ [note_audio,Fe] = audioread('Gamme majeur Do.wav'); % Combination d'aberrations
 
 
 
@@ -55,14 +55,10 @@ for i = 1:n_trames
     intensite = mean(abs(trame));
     log_intensite(i)=intensite;
     
-    if(intensite>seuil)
+    if(intensite>seuil) % Si c'est un son
         
         n_trames_son = n_trames_son + 1;
         
-        % On ignore les premières trames, pour n'obtenir que le régime
-        % transitoire
-        if(n_trames_son>n_trames_to_skip && ((n_trames_son-n_trames_to_skip)<=n_trames_to_keep))
-
             % Autocorrélation
             somme = 0;
             trame_pad = [zeros(1,decalage), trame, zeros(1,decalage)];
@@ -87,14 +83,19 @@ for i = 1:n_trames
             end
             
             % Si c'est les premiers peaks, initialiser le vecteur de log
-            % pour des raisons d'efficacité. On ne garde que trois sets de
-            % peaks
+            % pour des raisons d'efficacité. On ne garde que deux
             n_trame = n_trames_son-n_trames_to_skip;
             if((n_trame)==1)
                log_peaks=zeros(n_trames_to_keep,n_peaks); 
             end
             
             log_peaks(n_trame,:)=peaks;
+            
+            % Détection de la périodicité
+            if(n_trames_son>n_trames_to_skip && ((n_trames_son-n_trames_to_skip)<=n_trames_to_keep))
+                
+            else
+                
             
             % Détection de la note
             FFT_trame = fft(hanning(long_trame)'.*trame);
@@ -111,7 +112,7 @@ for i = 1:n_trames
             peaks;
         elseif(((n_trames_son-n_trames_to_skip)>n_trames_to_keep))
            % Détection de la périodicité
-           periodique=1;
+            periodique=1;
             for k=1:length(log_peaks)
                 if(abs(log_peaks(1,k)-log_peaks(2,k))>deviation_ecart_peak_max)
                     periodique=0;
@@ -128,7 +129,9 @@ for i = 1:n_trames
             log_peaks
             
         end
-        
+    
+    else % si l'intensité est sous le seuil
+        n_trames_son=0;
     end
 end
 
