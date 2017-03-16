@@ -10,27 +10,28 @@ clc
 % [note_audio,Fe] = audioread('Enregistrement.m4a');
 %
 %
-% [note_audio,Fe] = audioread('DO5.wav'); %Pas correct
+% [note_audio,Fe] = audioread('DO5.wav'); 
 % [note_audio,Fe] = audioread('DO#.wav');
 % [note_audio,Fe] = audioread('Re.wav');
 % [note_audio,Fe] = audioread('Re#.wav');
-% [note_audio,Fe] = audioread('Mi.wav'); % Pas correct
+% [note_audio,Fe] = audioread('Mi.wav'); 
 % [note_audio,Fe] = audioread('Fa.wav');
 % [note_audio,Fe] = audioread('_Fa#.wav');
-% [note_audio,Fe] = audioread('_sol.wav'); % Pas correct
+% [note_audio,Fe] = audioread('_sol.wav'); 
 % [note_audio,Fe] = audioread('_sol#.wav');
- [note_audio,Fe] = audioread('_LA.wav');
-% [note_audio,Fe] = audioread('LA#.wav'); % Fonctionne, mais peaks en bas
+% [note_audio,Fe] = audioread('_LA.wav');
+% [note_audio,Fe] = audioread('LA#.wav'); 
 % [note_audio,Fe] = audioread('Si.wav');
 %
-% [note_audio,Fe] = audioread('Gamme majeur Do.wav'); % Combination d'aberrations
+ [note_audio,Fe] = audioread('Gamme majeur Do.wav'); % problème à 267
 
 
 
 seuil = 0.02;
 long_trame = 2048;
 trame = zeros(1,long_trame);
-n_trames = ceil(length(note_audio)/long_trame);
+% n_trames = ceil(length(note_audio)/long_trame);
+ n_trames = 266;
 note_det = 0;
 log_intensite = zeros(1,n_trames);
 
@@ -46,14 +47,14 @@ n_trames_to_keep = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
 
 freq_trames=zeros(1,n_trames);
 % Analyse du son par trames
-for i = 1:n_trames
+for n_trame = 1:n_trames
     
     % Formation de la trame
-    trame  = note_audio(long_trame*(i-1)+1:long_trame*i);
+    trame  = note_audio(long_trame*(n_trame-1)+1:long_trame*n_trame);
     
     % Détection d'intensité
     intensite = mean(abs(trame));
-    log_intensite(i)=intensite;
+    log_intensite(n_trame)=intensite;
     
     if(intensite>seuil) % Si c'est un son
         
@@ -99,17 +100,23 @@ for i = 1:n_trames
             % Détection de la périodicité
             if(n_trame_analyse==1) % premier échantillon
                 log_peaks(1,:)=peaks;
+                periodique=0;
             elseif(n_trame_analyse==2) %second
-                log_peaks(2,:)=peaks;
-                periodique=1;
-                for k=1:length(log_peaks)
-                    if(abs(log_peaks(1,k)-log_peaks(2,k))>deviation_ecart_peak_max)
-                        periodique=0;
+                if(length(peaks)~=length(log_peaks(1,:)))
+                    periodique=0;
+                else
+                    
+                    log_peaks(2,:)=peaks;
+                    periodique=1;
+                    for k=1:length(log_peaks)
+                        if(abs(log_peaks(1,k)-log_peaks(2,k))>deviation_ecart_peak_max)
+                            periodique=0;
+                        end
                     end
+                    log_periodique(n_trame-1:n_trame)=periodique*ones(1,2);
                 end
-                log_periodique(i-1:i)=ones(1,2);
             else
-                log_periodique(i)=1;
+                log_periodique(n_trame)=periodique;
             end
             
             
@@ -118,7 +125,10 @@ for i = 1:n_trames
                 FFT_trame = fft(hanning(long_trame)'.*trame);
                 mag_FFT_trame =  abs(FFT_trame);
                 [amax,imax] = max(mag_FFT_trame);
-                freq_trames(i) = (imax-1)/(long_trame)*Fe;
+                freq_trames(n_trame) = (imax-1)/(long_trame)*Fe;
+                if(n_trame_analyse==2)
+                    freq_trames(n_trame-1) = freq_trames(n_trame);
+                end
             end
             
             figure(1)
