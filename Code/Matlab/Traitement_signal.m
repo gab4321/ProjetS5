@@ -19,7 +19,7 @@ clc
 % [note_audio,Fe] = audioread('_Fa#.wav');
 % [note_audio,Fe] = audioread('_sol.wav'); % Pas correct
 % [note_audio,Fe] = audioread('_sol#.wav');
-% [note_audio,Fe] = audioread('_LA.wav');
+ [note_audio,Fe] = audioread('_LA.wav');
 % [note_audio,Fe] = audioread('LA#.wav'); % Fonctionne, mais peaks en bas
 % [note_audio,Fe] = audioread('Si.wav');
 %
@@ -125,6 +125,7 @@ for i = 1:n_trames
             plot(autocorr_trame);
             hold on
             plot(peaks,autocorr_trame(peaks),'ro')
+            title('Autocorrélation et détection de peaks')
             
             peaks;
             
@@ -136,13 +137,16 @@ end
 
 figure(2)
 area(log_periodique)
+title('Périodicité des trames')
 
 figure(3)
 %plot(trame_periodique.*freq_trames)
 plot(freq_trames)
+title('Fréquence des trames')
 
 figure(4)
 plot(log_intensite)
+title('Intensité des trames')
 
 
 
