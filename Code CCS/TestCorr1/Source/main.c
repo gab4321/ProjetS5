@@ -89,10 +89,11 @@ void SetupAll();
 
 //VARIABLES POUR LE TEST DE CORRELATION
 //defines
-#define Ncorr 256         //N
-#define Ndecalage 100     //au choix / maximum N-1
-#define Nrep 201         //2*decalage+1
-#define Npadd 456        //N+2*decalage
+#define Ncorr 2048         //N
+#define Ndecalage 256     //au choix / maximum N-1
+#define Nrep 513         //2*decalage+1
+#define Npadd 2560        //N+2*decalage
+#define Nverif 10
 //variables
 int ncorr = (int)Ncorr;
 int ndecalage = (int)Ndecalage;
@@ -118,9 +119,10 @@ int IsSound = 0;
 void TestIntensite(int *TestAmp, int ntestSon);
 void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep);
 int debugMic = 0;
-int scale = 0.60;
-int TabPeak[Nrep];
-int nVerif = 2; //doit detecter n intervalles egales pour conclure que cest periodique
+double scale = 0.60;
+int nVerif = (int)Nverif; //doit detecter n intervalles egales pour conclure que cest periodique
+int TabPeak[Nverif];
+
 
 //PROGRAMME PRINCIPAL (LOOP)
 int main(){
@@ -206,7 +208,7 @@ interrupt void ISRTimer1()
     }
     else if(IsSound == 1 && TrameEnr == 0)
     {
-        ValADCIn = input_sample();
+        ValADCIn = input_left_sample();
 
         VectCorr[nbEchADC] = (int)(ValADCIn * GainNum);
 
@@ -281,9 +283,10 @@ void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep)
     int i;
     int maxcorr = 0;
     int npeaks = 0;
-    int interIni;
+    double interIni;
     int detect = 1;
-    int interK;
+    double interK;
+    double a;
 
     //detection de lamplitude maximale de la correlation
     for(i = 0; i < nrep; i++)
@@ -296,11 +299,11 @@ void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep)
     maxcorr = maxcorr * scale;
 
     //detection des indices i des peaks de la correlation
-    for(i = 2; i < nrep-2; i++)
+    for(i = 3; i < nrep-3; i++)
     {
-        if(VectRep[i] > VectRep[i-1] && VectRep[i] > VectRep[i-2])
+        if(VectRep[i] > VectRep[i-1] && VectRep[i] > VectRep[i-2] && VectRep[i] > VectRep[i-3])
         {
-            if(VectRep[i] > VectRep[i+1] && VectRep[i] > VectRep[i+2])
+            if(VectRep[i] > VectRep[i+1] && VectRep[i] > VectRep[i+2] && VectRep[i] > VectRep[i+3])
             {
                 if(VectRep[i] > maxcorr)
                 {
@@ -311,13 +314,20 @@ void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep)
         }
     }
 
+    // code d'erreur si seulement un peak est trouvé (signal apériodique)
+    if(npeaks < 8)
+    {
+        detect = 0;
+    }
+
     //detection des intervalles K entre les peaks
     //(le nb de verifications necessaires est a valider min = 2)
-    interIni = TabPeak[1] - TabPeak[0];
+    interIni = (double)(TabPeak[1] - TabPeak[0]);
     for(i = 1; i < nVerif; i++ )
     {
-        interK = TabPeak[i+1] - TabPeak[i];
-        if((int)abs((double)(interK-interIni)/(double)interIni)*100 > 5) //si ecart relative sup a 5 %
+        interK = (double)(TabPeak[i+1] - TabPeak[i]);
+        a = ((interK-interIni)/interIni)*100.0;
+        if( abs(a) > 6) //si ecart relative sup a 5 %
         {
             detect = 0;
             break;
@@ -326,17 +336,17 @@ void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep)
 
     if(detect == 1)
     {
-//        printf("signal periodique\n "); //a remplacer par des lumieres
+        printf("signal periodique \n"); //a remplacer par des lumieres
         FlagLed0 = 0;
         *CPLD_USER_REG &=~0x01;      //éteindre led0
         *CPLD_USER_REG |=0x02;      //allumer led1
     }
     else
     {
-//        printf("signal non periodique \n"); //a remplacer par des lumieres
+        printf("signal non periodique \n"); //a remplacer par des lumieres
         FlagLed0 = 0;
         *CPLD_USER_REG &=~0x01;      //éteindre led0
-        *CPLD_USER_REG |=0x03;      //allumer led2
+        *CPLD_USER_REG |=0x04;      //allumer led2
     }
 }
 
