@@ -17,15 +17,15 @@ clc
 % [note_audio,Fe] = audioread('Mi_8.wav');
 % [note_audio,Fe] = audioread('Fa_8.wav');
 % [note_audio,Fe] = audioread('Fa#_8.wav');
- [note_audio,Fe] = audioread('Sol_8.wav');
+% [note_audio,Fe] = audioread('Sol_8.wav');
 % [note_audio,Fe] = audioread('Sol#_8.wav');
 % [note_audio,Fe] = audioread('La_8.wav');
 % [note_audio,Fe] = audioread('La#_8.wav');
 % [note_audio,Fe] = audioread('Si_8.wav');
 %
-% [note_audio,Fe] = audioread('Gamme_majeur_Do_8.wav'); % problème à 267
+ [note_audio,Fe] = audioread('Gamme_majeur_Do_8.wav'); % problème à 267
 
-
+plot_FFT=0;
 
 seuil = 0.02;
 long_trame = 512;
@@ -46,6 +46,21 @@ n_trames_to_skip = 1;
 n_trames_to_keep = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
 
 freq_trames=zeros(1,n_trames);
+
+
+oscillation_dB = 1;
+% Conception du filtre passe-haut
+f_coupure1 = 250/(Fe/2);
+[A,B,C,D] = cheby1(10,oscillation_dB , f_coupure1,'high');
+[sos1,gain_global1] = ss2sos(A,B,C,D, 'up', 'inf');
+[b1,a1] = sos2tf(sos1, gain_global1);
+
+% Conception du filtre passe-bas
+f_coupure2 = 520/(Fe/2);
+[A,B,C,D] = cheby1(10, oscillation_dB, f_coupure2,'low');
+[sos2,gain_global2] = ss2sos(A,B,C,D, 'up', 'inf');
+[b2,a2] = sos2tf(sos2, gain_global2);
+
 % Analyse du son par trames
 for n_trame = 1:n_trames
     
@@ -67,7 +82,10 @@ for n_trame = 1:n_trames
             n_trame_analyse = n_trames_son-n_trames_to_skip;
             
             % Filtrage de la trame
-            % TODO
+            % Passe-haut
+            trame=filter(b1,a1,trame);
+            % Passe-bas
+            trame=filter(b2,a2,trame);
             
             if(n_trame_analyse<=n_trames_to_keep)
                 
@@ -146,9 +164,9 @@ for n_trame = 1:n_trames
             plot(peaks,autocorr_trame(peaks),'ro')
             title('Autocorrélation et détection de peaks')
             
-            if(n_trame_analyse==1 && periodique)
+            if(periodique&&plot_FFT)
                 figure()
-                plot(FFT_trame);
+                plot(mag_FFT_trame);
             end
             
             peaks;
