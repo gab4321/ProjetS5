@@ -132,7 +132,6 @@ for n_trame = 1:n_trames
                 if(length(peaks)~=length(log_peaks(1,:)))
                     periodique=0;
                 else
-                    
                     log_peaks(2,:)=peaks;
                     periodique=1;
                     for k=1:length(log_peaks)
