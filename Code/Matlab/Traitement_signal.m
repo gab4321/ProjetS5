@@ -3,29 +3,44 @@ clear all
 clc
 
 
+%% Fichiers audio
 
 %[Freq800,Fe] = audioread('800.wav');
 %Freq800 = Freq800(1:1000,1);
 
-% [note_audio,Fe] = audioread('Enregistrement_8.wav');
+% [note_audio,Fe] = audioread('Bruits/Enregistrement_8.wav');
 %
 %
-% [note_audio,Fe] = audioread('Do_8.wav');
-% [note_audio,Fe] = audioread('Do#_8.wav');
-% [note_audio,Fe] = audioread('Re_8.wav');
-% [note_audio,Fe] = audioread('Re#_8.wav');
-% [note_audio,Fe] = audioread('Mi_8.wav');
-% [note_audio,Fe] = audioread('Fa_8.wav');
-% [note_audio,Fe] = audioread('Fa#_8.wav');
-% [note_audio,Fe] = audioread('Sol_8.wav');
-% [note_audio,Fe] = audioread('Sol#_8.wav');
-% [note_audio,Fe] = audioread('La_8.wav');
-% [note_audio,Fe] = audioread('La#_8.wav');
-% [note_audio,Fe] = audioread('Si_8.wav');
+% [note_audio,Fe] = audioread('Notes/Do_8.wav');
+% [note_audio,Fe] = audioread('Notes/Do#_8.wav');
+% [note_audio,Fe] = audioread('Notes/Re_8.wav');
+% [note_audio,Fe] = audioread('Notes/Re#_8.wav');
+% [note_audio,Fe] = audioread('Notes/Mi_8.wav');
+% [note_audio,Fe] = audioread('Notes/Fa_8.wav');
+% [note_audio,Fe] = audioread('Notes/Fa#_8.wav');
+% [note_audio,Fe] = audioread('Notes/Sol_8.wav');
+% [note_audio,Fe] = audioread('Notes/Sol#_8.wav');
+% [note_audio,Fe] = audioread('Notes/La_8.wav');
+% [note_audio,Fe] = audioread('Notes/La#_8.wav');
+% [note_audio,Fe] = audioread('Notes/Si_8.wav');
 %
- [note_audio,Fe] = audioread('Gamme_majeur_Do_8.wav'); % problème à 267
+% [note_audio,Fe] = audioread('Gammes/Gamme_majeur_Do_8.wav'); % problème à 267
 
-plot_FFT=0;
+% [note_audio,Fe] = audioread('Accords/C.wav');
+% [note_audio,Fe] = audioread('Accords/C+G.wav');
+% [note_audio,Fe] = audioread('Accords/D.wav');
+% [note_audio,Fe] = audioread('Accords/Dmin.wav'); % Fonctionne pas
+ [note_audio,Fe] = audioread('Accords/Ginv.wav');
+% [note_audio,Fe] = audioread('Notes/Fa_8.wav');
+% [note_audio,Fe] = audioread('Notes/Fa#_8.wav');
+% [note_audio,Fe] = audioread('Notes/Sol_8.wav');
+% [note_audio,Fe] = audioread('Notes/Sol#_8.wav');
+% [note_audio,Fe] = audioread('Notes/La_8.wav');
+% [note_audio,Fe] = audioread('Notes/La#_8.wav');
+% [note_audio,Fe] = audioread('Notes/Si_8.wav');
+
+%% Algorithme bitch
+plot_FFT=1;
 n_trames_fft_plot=3;
 
 seuil = 0.02;
@@ -105,6 +120,7 @@ for n_trame = 1:n_trames
                 
                 
                 % Détection de peaks
+                % TODO : Ne garder que les plus grands peaks (fondamentale)
                 n_peaks=0;
                 peaks = 0;
                 for k = 4:(length(autocorr_trame)-3)
@@ -135,7 +151,7 @@ for n_trame = 1:n_trames
                     log_peaks(2,:)=peaks;
                     periodique=1;
                     for k=1:length(log_peaks)
-                        if(abs(log_peaks(1,k)-log_peaks(2,k))>deviation_ecart_peak_max)
+                        if(abs(log_peaks(1,k)-log_peaks(2,k))>deviation_ecart_peak_max) 
                             periodique=0;
                         end
                     end
@@ -146,7 +162,9 @@ for n_trame = 1:n_trames
             end
             
             
-            % Détection de la note
+            % Détection des notes
+            %TODO : Tableau de 3 notes
+            %TODO : Éviter les harmoniques en C
             if(periodique)
                 FFT_trame = fft(hanning(long_trame)'.*trame);
                 mag_FFT_trame =  abs(FFT_trame);
@@ -163,9 +181,9 @@ for n_trame = 1:n_trames
             plot(peaks,autocorr_trame(peaks),'ro')
             title('Autocorrélation et détection de peaks')
             
-            if(periodique&&plot_FFT&n_trame_analyse<=n_trames_fft_plot)
+            if(periodique&&plot_FFT&&n_trame_analyse<=n_trames_fft_plot)
                 figure()
-                plot(mag_FFT_trame);
+                plot(mag_FFT_trame(1:128));
             end
             
             peaks;
