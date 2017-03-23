@@ -26,6 +26,7 @@ clc
  [note_audio,Fe] = audioread('Gamme_majeur_Do_8.wav'); % problème à 267
 
 plot_FFT=0;
+n_trames_fft_plot=3;
 
 seuil = 0.02;
 long_trame = 512;
@@ -35,7 +36,7 @@ n_trames = ceil(length(note_audio)/long_trame);
 note_det = 0;
 log_intensite = zeros(1,n_trames);
 
-decalage = 128;
+decalage = 64;
 autocorr_trame = zeros(1,2*decalage+1);
 
 
@@ -46,7 +47,6 @@ n_trames_to_skip = 1;
 n_trames_to_keep = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
 
 freq_trames=zeros(1,n_trames);
-
 
 oscillation_dB = 1;
 % Conception du filtre passe-haut
@@ -164,7 +164,7 @@ for n_trame = 1:n_trames
             plot(peaks,autocorr_trame(peaks),'ro')
             title('Autocorrélation et détection de peaks')
             
-            if(periodique&&plot_FFT)
+            if(periodique&&plot_FFT&n_trame_analyse<=n_trames_fft_plot)
                 figure()
                 plot(mag_FFT_trame);
             end
