@@ -61,7 +61,7 @@ n_trames_son = 0;
 n_trames_to_skip = 1;
 n_trames_to_keep = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
 
-freq_trames=zeros(1,n_trames);
+freq_trames=zeros(3,n_trames);
 
 oscillation_dB = 1;
 % Conception du filtre passe-haut
@@ -71,7 +71,8 @@ f_coupure1 = 250/(Fe/2);
 [b1,a1] = sos2tf(sos1, gain_global1);
 
 % Conception du filtre passe-bas
-f_coupure2 = 520/(Fe/2);
+freq_max_gamme = 520;
+f_coupure2 = freq_max_gamme/(Fe/2);
 [A,B,C,D] = cheby1(10, oscillation_dB, f_coupure2,'low');
 [sos2,gain_global2] = ss2sos(A,B,C,D, 'up', 'inf');
 [b2,a2] = sos2tf(sos2, gain_global2);
@@ -168,8 +169,21 @@ for n_trame = 1:n_trames
             if(periodique)
                 FFT_trame = fft(hanning(long_trame)'.*trame);
                 mag_FFT_trame =  abs(FFT_trame);
-                [amax,imax] = max(mag_FFT_trame);
-                freq_trames(n_trame) = (imax-1)/(long_trame)*Fe;
+                % Détection de peaks
+                % Étape 1 : Trouver l'indice i_fin de fin de gamme
+                i_fin = floor(freq_max_gamme*long_trame/Fe+1)+2;
+                % Étape 2 : Chercher les peaks jusqu'à l'indice i
+                n_peaks_FFT = 0;
+                peaks_FFT = zeros(1,3);
+                for k = 3:(i_fin-2)
+                    if(mag_FFT_trame(k)>mag_FFT_trame(k-1) && mag_FFT_trame(k)>mag_FFT_trame(k-2))
+                        if(mag_FFT_trame(k)>mag_FFT_trame(k+1) && mag_FFT_trame(k)>mag_FFT_trame(k+2))
+                            n_peaks_FFT=n_peaks_FFT+1;
+                            peaks_FFT (1,n_peaks_FFT)= k;
+                        end
+                    end
+                end
+                freq_trames(:,n_trame) = (peaks_FFT-1)/(long_trame)*Fe;
                 if(n_trame_analyse==2)
                     freq_trames(n_trame-1) = freq_trames(n_trame);
                 end
@@ -200,7 +214,9 @@ title('Périodicité des trames')
 
 figure()
 %plot(trame_periodique.*freq_trames)
-plot(freq_trames)
+plot(freq_trames(1,:))
+plot(freq_trames(2,:))
+plot(freq_trames(3,:))
 title('Fréquence des trames')
 
 figure()
