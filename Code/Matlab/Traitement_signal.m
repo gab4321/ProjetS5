@@ -58,7 +58,7 @@ autocorr_trame = zeros(1,2*decalage+1);
 deviation_ecart_peak_max = 6;
 log_periodique = zeros(1,n_trames);
 n_trames_son = 0;
-n_trames_to_skip = 1;
+n_trames_to_skip = 2;
 n_trames_to_keep = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
 
 freq_trames=zeros(3,n_trames);
@@ -171,10 +171,10 @@ for n_trame = 1:n_trames
                 mag_FFT_trame =  abs(FFT_trame);
                 % Détection de peaks
                 % Étape 1 : Trouver l'indice i_fin de fin de gamme
-                i_fin = floor(freq_max_gamme*long_trame/Fe+1)+2;
+                i_fin = floor(freq_max_gamme*long_trame/Fe+1);
                 % Étape 2 : Chercher les peaks jusqu'à l'indice i
                 n_peaks_FFT = 0;
-                peaks_FFT = zeros(1,3);
+                peaks_FFT = ones(1,3);
                 for k = 3:(i_fin-2)
                     if(mag_FFT_trame(k)>mag_FFT_trame(k-1) && mag_FFT_trame(k)>mag_FFT_trame(k-2))
                         if(mag_FFT_trame(k)>mag_FFT_trame(k+1) && mag_FFT_trame(k)>mag_FFT_trame(k+2))
@@ -213,14 +213,19 @@ area(log_periodique)
 title('Périodicité des trames')
 
 figure()
-%plot(trame_periodique.*freq_trames)
+
+hold on
 plot(freq_trames(1,:))
+
 plot(freq_trames(2,:))
+
 plot(freq_trames(3,:))
 title('Fréquence des trames')
 
 figure()
-plot(log_intensite)
+x=1:length(log_intensite);
+x=x*long_trame/Fe;
+plot(x,log_intensite)
 title('Intensité des trames')
 
 
