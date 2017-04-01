@@ -89,11 +89,11 @@ void SetupAll();
 
 //VARIABLES POUR LE TEST DE CORRELATION
 //defines
-#define Ncorr 2048         //N
-#define Ndecalage 256     //au choix / maximum N-1
-#define Nrep 513         //2*decalage+1
-#define Npadd 2560        //N+2*decalage
-#define Nverif 10
+#define Ncorr 512         //N
+#define Ndecalage 96     //au choix / maximum N-1
+#define Nrep  193        //2*decalage+1
+#define Npadd 704       //N+2*decalage
+#define Nverif 15
 //variables
 int ncorr = (int)Ncorr;
 int ndecalage = (int)Ndecalage;
@@ -119,7 +119,7 @@ int IsSound = 0;
 void TestIntensite(int *TestAmp, int ntestSon);
 void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep);
 int debugMic = 0;
-double scale = 0.60;
+double scale = 0.30;
 int nVerif = (int)Nverif; //doit detecter n intervalles egales pour conclure que cest periodique
 int TabPeak[Nverif];
 
@@ -315,7 +315,7 @@ void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep)
     }
 
     // code d'erreur si seulement un peak est trouvé (signal apériodique)
-    if(npeaks < 8)
+    if(npeaks < 7)              // a changer pour englober le nb de peak de la plus basse et de la plus haute freq
     {
         detect = 0;
     }
@@ -323,11 +323,17 @@ void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep)
     //detection des intervalles K entre les peaks
     //(le nb de verifications necessaires est a valider min = 2)
     interIni = (double)(TabPeak[1] - TabPeak[0]);
-    for(i = 1; i < nVerif; i++ )
+    for(i = 1; i < npeaks-1; i++ )
     {
         interK = (double)(TabPeak[i+1] - TabPeak[i]);
         a = ((interK-interIni)/interIni)*100.0;
-        if( abs(a) > 6) //si ecart relative sup a 5 %
+
+        if(a < 0)
+        {
+            a = -a;     // abs
+        }
+
+        if( a > 6) //si ecart relative sup a 5 %
         {
             detect = 0;
             break;
