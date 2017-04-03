@@ -73,6 +73,7 @@ void main()
 {
 	// initialisation des modules et des périphériques
     DSK6713_init();
+    DSK6713_LED_init();
     DSK6713_DIP_init();
 
     // init des led
@@ -86,7 +87,7 @@ void main()
 
 	// enable des interrupts
 	EnableGlobalInterrupts();
-	
+	 EcrireNom(); // ecrit le nom dequipe
 	DSK6713_waitusec(250);
 
 	// Boucle infinie
@@ -96,8 +97,9 @@ void main()
 	    if(flag_SPI)
 	    {
 	        // faire lecture SPI
+	        flag_SPI = 0;
 	        ReadValue = SPI_Read();
-
+	        printf("Valeur lue: %i\n",ReadValue);
 	        if(ReadValue == 0X0052) //si le caractere recu est "R"
 	            EcrireNom(); // ecrit le nom dequipe
 	        flag_SPI = 0;
@@ -113,7 +115,22 @@ void main()
 void EcrireNom()
 {
     // a changer pour la bonne séquence
+    SPI_Write(0X0050);  //ecrit un "P"
+   // DSK6713_waitusec(100);
+    SPI_Write(0X0049);  //ecrit un "I"
+   // DSK6713_waitusec(100);
     SPI_Write(0X0041);  //ecrit un "A"
+   // DSK6713_waitusec(100);
+    SPI_Write(0X004E);  //ecrit un "N"
+  //  DSK6713_waitusec(100);
+    SPI_Write(0X002D);  //ecrit un "-"
+   // DSK6713_waitusec(100);
+    SPI_Write(0X0055);  //ecrit un "U"
+   // DSK6713_waitusec(100);
+    SPI_Write(0X0053);  //ecrit un "S"
+   // DSK6713_waitusec(100);
+    SPI_Write(0X0021);  //ecrit un "!"
+   // DSK6713_waitusec(100);
 }
 
 // active les interrupts

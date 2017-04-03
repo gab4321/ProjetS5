@@ -18,7 +18,7 @@ source/c/SPI_driver.obj: C:/ti/dsk6713/include/dsk6713.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_timer.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_timerhal.h
-source/c/SPI_driver.obj: C:/Users/Gabriel/workspace_v7/DEMO_COM_RS232/includes/SPI_driver.h
+source/c/SPI_driver.obj: U:/s5/Projet/Workspace/DEMO_COM_RS232/includes/SPI_driver.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdio.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/linkage.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdarg.h
@@ -46,7 +46,7 @@ C:/ti/dsk6713/include/dsk6713.h:
 C:/ti/ccsv7/ccs_base/C6xCSL/include/csl.h: 
 C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_timer.h: 
 C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_timerhal.h: 
-C:/Users/Gabriel/workspace_v7/DEMO_COM_RS232/includes/SPI_driver.h: 
+U:/s5/Projet/Workspace/DEMO_COM_RS232/includes/SPI_driver.h: 
 C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdio.h: 
 C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/linkage.h: 
 C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdarg.h: 

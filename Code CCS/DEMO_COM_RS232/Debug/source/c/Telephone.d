@@ -1,7 +1,7 @@
 # FIXED
 
 source/c/Telephone.obj: ../source/c/Telephone.c
-source/c/Telephone.obj: C:/Users/Gabriel/workspace_v7/DEMO_COM_RS232/includes/SPI_driver.h
+source/c/Telephone.obj: U:/s5/Projet/Workspace/DEMO_COM_RS232/includes/SPI_driver.h
 source/c/Telephone.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdio.h
 source/c/Telephone.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/linkage.h
 source/c/Telephone.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdarg.h
@@ -31,7 +31,7 @@ source/c/Telephone.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdio.h
 source/c/Telephone.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stddef.h
 
 ../source/c/Telephone.c: 
-C:/Users/Gabriel/workspace_v7/DEMO_COM_RS232/includes/SPI_driver.h: 
+U:/s5/Projet/Workspace/DEMO_COM_RS232/includes/SPI_driver.h: 
 C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdio.h: 
 C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/linkage.h: 
 C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdarg.h: 

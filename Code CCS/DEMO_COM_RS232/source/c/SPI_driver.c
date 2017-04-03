@@ -42,7 +42,7 @@ extern int is_comp;
 #define CPLD_MISC_REG 0x90080006
 
 // commandes de base MAX3111E (VERIF POURQUOI IL FAUT MOTS DE 32 bits)
-#define SPI_WRITE_CONFIG 0xE44B
+#define SPI_WRITE_CONFIG 0xE441
 #define SPI_READ_CONFIG 0x4000 // disable test mode ou non?
 #define SPI_WRITE_DATA 0x8000  // pas certain?? (pour ecrire -> faire ou logique avec la data)
 #define SPI_READ_DATA 0x00FF   // pour lire -> faire et logique avec la data pour la conserver
@@ -208,7 +208,7 @@ void SPI_Write(short SPI_data)
         SPI_data = SPI_data/256;
     }
     */
-
+     DSK6713_waitusec(100);
     SPI_data &= 0x00FF;
     SPI_data |= SPI_WRITE_DATA;
 
