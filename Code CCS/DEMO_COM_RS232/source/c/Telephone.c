@@ -1,13 +1,13 @@
 /********************************************************
-**  Session 5 - APP6 - Téléphonie par DSP
-**  Fichier principal Telephone.c
-**  Auteurs : < vos noms >
-**  Date : < derniere modification >
-********************************************************/ 
+ **  Session 5 - APP6 - Téléphonie par DSP
+ **  Fichier principal Telephone.c
+ **  Auteurs : < vos noms >
+ **  Date : < derniere modification >
+ ********************************************************/
 
 /***************************************************************************
 	Include headers :
-***************************************************************************/
+ ***************************************************************************/
 
 // Used modules headers
 //#include "module_example.h"
@@ -26,14 +26,14 @@
 
 /****************************************************************************
 	Private macros and constants :
-****************************************************************************/
+ ****************************************************************************/
 
 //vos  #defines ou const int blablabla
 //unique à ce fichier
 
 /****************************************************************************
 	Extern content declaration :
-****************************************************************************/
+ ****************************************************************************/
 
 // déclaration des contenus utilisés ici mais définis ailleurs
 
@@ -43,7 +43,7 @@ extern short input_SPI;
 
 /****************************************************************************
 	Private Types :
-****************************************************************************/
+ ****************************************************************************/
 
 // type struct, enum , etc. definition here
 
@@ -51,7 +51,7 @@ extern short input_SPI;
 
 /****************************************************************************
 	Private global variables :
-****************************************************************************/
+ ****************************************************************************/
 
 // Use static keyword here
 int is_comp = 0;
@@ -60,18 +60,18 @@ short ReadValue = 0;
 
 /****************************************************************************
 	Main program private functions prototypes :
-****************************************************************************/
+ ****************************************************************************/
 
 void EnableGlobalInterrupts();
 void EcrireNom();
 
 /****************************************************************************
 	Main Program :
-****************************************************************************/
+ ****************************************************************************/
 
 void main()
 {
-	// initialisation des modules et des périphériques
+    // initialisation des modules et des périphériques
     DSK6713_init();
     DSK6713_LED_init();
     DSK6713_DIP_init();
@@ -83,54 +83,45 @@ void main()
     DSK6713_LED_off(3);
 
     // init des modules
-	SPI_init();
+    SPI_init();
 
-	// enable des interrupts
-	EnableGlobalInterrupts();
-	 EcrireNom(); // ecrit le nom dequipe
-	DSK6713_waitusec(250);
+    // enable des interrupts
+    EnableGlobalInterrupts();
+    EcrireNom(); // ecrit le nom dequipe
+    DSK6713_waitusec(250);
 
-	// Boucle infinie
-	while(1)
-	{	
-	    // Si donnée est prete sur MCBSP0
-	    if(flag_SPI)
-	    {
-	        // faire lecture SPI
-	        flag_SPI = 0;
-	        ReadValue = SPI_Read();
-	        printf("Valeur lue: %i\n",ReadValue);
-	        if(ReadValue == 0X0052) //si le caractere recu est "R"
-	            EcrireNom(); // ecrit le nom dequipe
-	        flag_SPI = 0;
-	    }
-	}
+    // Boucle infinie
+    while(1)
+    {
+        // Si donnée est prete sur MCBSP0
+        if(flag_SPI)
+        {
+            // faire lecture SPI
+            flag_SPI = 0;
+            ReadValue = SPI_Read();
+            printf("Valeur lue: %i\n",ReadValue);
+            if(ReadValue == 0X0052) //si le caractere recu est "R"
+                EcrireNom(); // ecrit le nom dequipe
+            flag_SPI = 0;
+        }
+    }
 }
 
 /****************************************************************************
 	Main program private functions :
-****************************************************************************/
+ ****************************************************************************/
 
 //ecrit le nom dequipe de projet
 void EcrireNom()
 {
-    // a changer pour la bonne séquence
     SPI_Write(0X0050);  //ecrit un "P"
-   // DSK6713_waitusec(100);
     SPI_Write(0X0049);  //ecrit un "I"
-   // DSK6713_waitusec(100);
     SPI_Write(0X0041);  //ecrit un "A"
-   // DSK6713_waitusec(100);
     SPI_Write(0X004E);  //ecrit un "N"
-  //  DSK6713_waitusec(100);
     SPI_Write(0X002D);  //ecrit un "-"
-   // DSK6713_waitusec(100);
     SPI_Write(0X0055);  //ecrit un "U"
-   // DSK6713_waitusec(100);
     SPI_Write(0X0053);  //ecrit un "S"
-   // DSK6713_waitusec(100);
     SPI_Write(0X0021);  //ecrit un "!"
-   // DSK6713_waitusec(100);
 }
 
 // active les interrupts
@@ -142,6 +133,6 @@ void EnableGlobalInterrupts()
 
 /****************************************************************************
 	Main program interrupt service routines (ISR) :
-****************************************************************************/
+ ****************************************************************************/
 
 // end of Telephone.c
