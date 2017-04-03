@@ -9,15 +9,15 @@ fe = 8000;
 oscillation_dB = 2;
 
 % frequences pour loctave dinteret (5eme)
-% B4: 493,88 Hz (a filtrer)
-% C5: 523,25 Hz (on conserve cette frequence)
-% C6: 1046,50 Hz (on conserve cette frequence)
-% C#6: 1108,93 Hz (a filtrer)
+%  247 Hz (a filtrer)
+%  261 Hz (on conserve cette frequence)
+%  443,88 Hz (on conserve cette frequence)
+%  523,35 Hz (a filtrer)
 
 %% 1ER FILTRE: passe haut 
 
 % conception du filtre
-f_coupure1 = 515/(fe/2);
+f_coupure1 = 260/(fe/2);
 [A B C D] = cheby1(10,oscillation_dB , f_coupure1,'high');
 [sos1 gain_global1] = ss2sos(A,B,C,D, 'up', 'inf');
 
@@ -32,9 +32,9 @@ title('plan en z du filtre passe haut')
 figure
 plot(W,20*log10(abs(H)))
 hold on
-plot((2*pi*523.25/(fe))*ones(size(-50:0.01:10)),-50:0.01:10)
+plot((2*pi*247/(fe))*ones(size(-50:0.01:10)),-50:0.01:10)
 hold on
-plot((2*pi*493.88/(fe))*ones(size(-50:0.01:10)),-50:0.01:10)
+plot((2*pi*261/(fe))*ones(size(-50:0.01:10)),-50:0.01:10)
 title('conception du filtre passe haut (reponse en amplitude)')
 
 % test filtrage et Génération de sinus
@@ -55,7 +55,7 @@ dlmwrite('coeff_filtre1.txt', sos1);
 dlmwrite('coeff_filtre1.txt',gain_global1,'-append','delimiter',' ','roffset',1)
 
 %% 2EME FILTRE: passe bas 
-f_coupure2 = 1060/(fe/2);
+f_coupure2 = 496/(fe/2);
 [A B C D] = cheby1(10, oscillation_dB, f_coupure2,'low');
 [sos2 gain_global2] = ss2sos(A,B,C,D, 'up', 'inf');
 
@@ -70,9 +70,9 @@ title('plan en z du filtre passe bas')
 figure
 plot(W2,20*log10(abs(H2)))
 hold on
-plot((2*pi*1108.93/(fe))*ones(size(-50:0.01:10)),-50:0.01:10)
+plot((2*pi*493.88/(fe))*ones(size(-50:0.01:10)),-50:0.01:10)
 hold on
-plot((2*pi*1046.50/(fe))*ones(size(-50:0.01:10)),-50:0.01:10)
+plot((2*pi*523.35/(fe))*ones(size(-50:0.01:10)),-50:0.01:10)
 title('conception du filtre passe bas (reponse en amplitude)')
 
 % cascade des deux filtre pour obtenir le passe bande
@@ -82,7 +82,7 @@ title('reponse en amplitude des deux filtre en cascade')
 
 % test filtrage et Génération de sinus
 n2=1:1:256;
-f2=1038;  % frequence a rentrer dans le systeme pour observer dans domaine temporel
+f2=300;  % frequence a rentrer dans le systeme pour observer dans domaine temporel
 fe=8000;
 x2= sin(2*pi*f2*n2/(fe));
 figure
