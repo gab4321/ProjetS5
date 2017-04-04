@@ -91,6 +91,26 @@ int FlagLed0 = 0;
 float TableCos3[Ncorr] = {0};
 int debug = 1;
 int F2 = 1000;
+/********************************************************************************************/
+// variables pour le metronome
+int BPM = 120;      //frequence du metronome
+int freqMet = 600; // frequence du son du metronome
+#define Lsinus 40     // longueur du vecteur pour contenir la frequence
+int TempsMet = 30;   // en millisecondes
+
+short TabFreqMet[Lsinus]; // table contenant un sinus a la freq du metronome
+
+short sonMetronome = 0;
+
+int compteurNBsinus = 0;    // compteur
+
+int compteurNBfois = 0; // compteur
+int Nbexecution = 0;     //nb de fois a jouer la sequence de sinus par coup de metronome
+
+int volumeMet = 20000;
+
+int compteurTemps = 0;      // compteur
+int NbTemps = 0;        //temps en nombre de periode (1/Fs) avant le prochain coup de metronome
 
 /********************************************************************************************
 Description : Fonction principale
@@ -99,12 +119,18 @@ int main()
 {
     /********************************************************************************************/
     // INITIALISATION DE TOUT (DÉCOMMENTER SUR LE DSK)
+
     // Initialisation des variables intermédiaires w(n-i) pour les IIR
-    //init_w();
+    init_w();
+
     // Démarrage des interruptions (CODEC)
-    //comm_intr();
+    comm_intr();
+
     // fenetre de hamming
-    //GenHamming(FenHamming);
+    GenHamming(FenHamming);
+
+    // initialisation des parametres du metronome
+    InitialiseMetronome(TabFreqMet, &Nbexecution, &NbTemps, (int)Lsinus, volumeMet, freqMet, TempsMet, BPM);
     /********************************************************************************************/
 
     if(debug)
@@ -194,7 +220,7 @@ interrupt void c_int11()
 {
     /********************************************************************************************/
     // VARIABLES
-	static int inputInterne = 1, FLT_IIR = 0, debugMic = 0, outputDAC = 1, Traitement_Audio = 0;
+	static int inputInterne = 1, FLT_IIR = 0, debugMic = 0, outputDAC = 1, Traitement_Audio = 0, IsMetronome = 0;
     static int n=1;
 	short x, y, y1;
     /********************************************************************************************/
@@ -254,6 +280,19 @@ interrupt void c_int11()
         }
     }
     /********************************************************************************************/
+
+    /********************************************************************************************/
+    // PARTI POUR GÉNÉRER UN MÉTRONOME
+    if(IsMetronome)
+    {
+        sonMetronome = GenererMetronome(TabFreqMet, Nbexecution, NbTemps, (int)Lsinus, &compteurTemps, &compteurNBfois, &compteurNBsinus);
+
+        AIC23_data.channel[DROIT] =  sonMetronome;
+        AIC23_data.channel[GAUCHE] = sonMetronome;
+        output_sample(AIC23_data.uint);         // Sortir les deux signaux sur HEADPHONE
+    }
+    /********************************************************************************************/
+
 
     /********************************************************************************************/
     // PARTIES DE CODE DESTINÉES AU DEBUG

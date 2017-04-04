@@ -36,4 +36,11 @@ void ApplicationFentre(float *Fenetre, float *TableFFT);
 // fonction qui analyse la FFT
 void AnalyseFFT(float *Sortie_FFT);
 
+// fonction qui genere le son de metronome a une frequence désirée (BPM)
+short GenererMetronome(short *table, int nbexecution, int nbcompteur, int nbValSinus, int *compteurTemps, int *compteurNbFois, int *compteurSinus);
+
+// genere le sinus pour le metronome
+void InitialiseMetronome(short *table, int *nbexecution, int *nbcompteur, int nbValSinus,int volumeMet, int freqMet,int tempsMet, int BPM);
+
+
 #endif

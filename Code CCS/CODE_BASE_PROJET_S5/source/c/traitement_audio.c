@@ -22,6 +22,7 @@ Variables pour les fonctions de traitement audio
 #define CPLD_USER_REG (unsigned int *) 0x90080000
 
 extern const double PI;
+extern const int Fs;
 
 // variables du main pour la correlation
 extern int ndecalage;
@@ -244,6 +245,74 @@ Description : analyse le resultat de la FFT
 void AnalyseFFT(float *Sortie_FFT)
 {
     // A FAIRE !!!!!!!
+}
+
+/********************************************************************************************
+Description : genere le prochain echantillon de metronome a jouer
+********************************************************************************************/
+short GenererMetronome(short *table, int nbexecution, int nbcompteur, int nbValSinus, int *compteurTemps, int *compteurNbFois, int *compteurSinus)
+{
+    static int start;
+    static short valactuelle;
+
+    if(*compteurTemps == 0)
+    {
+        *compteurNbFois = 0;
+        *compteurSinus = 0;
+
+        start = 1;
+    }
+
+    if(start == 1)
+    {
+
+        valactuelle = table[*compteurSinus];
+
+        if(*compteurSinus++ >= nbValSinus)
+        {
+            *compteurSinus = 0;
+            *compteurNbFois++;
+        }
+
+        if(*compteurNbFois >= nbexecution)
+        {
+            start = 0;
+            *compteurSinus = 0;
+            *compteurNbFois = 0;
+
+        }
+    }
+
+    if(*compteurTemps++ >= nbcompteur)
+        *compteurTemps = 0;
+
+
+    if(start == 0)
+    {
+        valactuelle = 0;
+    }
+
+    return valactuelle;
+}
+
+/********************************************************************************************
+Description : genere les parametre de la fonction de metronome selon les parametre selectionnés
+********************************************************************************************/
+void InitialiseMetronome(short *table, int *nbexecution, int *nbcompteur, int nbValSinus,int volumeMet, int freqMet,int tempsMet, int BPM)
+{
+    int n;
+
+    // genere la table de sinus
+    for (n = 0; n < nbValSinus; n++)
+    {
+        table[n] = (short)(volumeMet*cos(2.0 * PI * (float)freqMet * (float)n / (float)Fs));
+    }
+
+    // nb de fois quil faut executer le tableau de sinus pour faire le temps desirer par coup de metronome
+    *nbexecution = ((float)tempsMet/1000.0)/((float)nbValSinus*1.0/((float)Fs));
+
+    // nb de coup de frequence 1/fs a attendre avant doutputter le prochain coup de metronome
+    *nbcompteur = (1.0/((float)BPM/60.0))/(1.0/((float)Fs));
 }
 
 
