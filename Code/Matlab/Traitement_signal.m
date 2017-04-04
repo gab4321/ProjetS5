@@ -5,8 +5,12 @@ clc
 
 %% Fichiers audio
 
-%[Freq800,Fe] = audioread('800.wav');
-%Freq800 = Freq800(1:1000,1);
+
+% Fe = 8000;
+% Long_sinus = Fe*10; % 10 secondes
+% n = 1:Long_sinus;
+% freq_norm = 2*pi*n/Fe*300;
+% note_audio = sin(freq_norm)';
 
 % [note_audio,Fe] = audioread('Bruits/Enregistrement_8.wav');
 %
@@ -19,49 +23,43 @@ clc
 % [note_audio,Fe] = audioread('Notes/Fa_8.wav');
 % [note_audio,Fe] = audioread('Notes/Fa#_8.wav');
 % [note_audio,Fe] = audioread('Notes/Sol_8.wav');
-% [note_audio,Fe] = audioread('Notes/Sol#_8.wav');
+ [note_audio,Fe] = audioread('Notes/Sol#_8.wav');
 % [note_audio,Fe] = audioread('Notes/La_8.wav');
 % [note_audio,Fe] = audioread('Notes/La#_8.wav');
 % [note_audio,Fe] = audioread('Notes/Si_8.wav');
 %
-% [note_audio,Fe] = audioread('Gammes/Gamme_majeur_Do_8.wav'); % problème à 267
+% [note_audio,Fe] = audioread('Gammes/Gamme_majeur_Do_8.wav');
+% [note_audio,Fe] = audioread('Accords/Arpege_mongol.wav');
 
 % [note_audio,Fe] = audioread('Accords/C.wav');
 % [note_audio,Fe] = audioread('Accords/C+G.wav');
 % [note_audio,Fe] = audioread('Accords/D.wav');
 % [note_audio,Fe] = audioread('Accords/Dmin.wav'); % Fonctionne pas
- [note_audio,Fe] = audioread('Accords/Ginv.wav');
-% [note_audio,Fe] = audioread('Notes/Fa_8.wav');
-% [note_audio,Fe] = audioread('Notes/Fa#_8.wav');
-% [note_audio,Fe] = audioread('Notes/Sol_8.wav');
-% [note_audio,Fe] = audioread('Notes/Sol#_8.wav');
-% [note_audio,Fe] = audioread('Notes/La_8.wav');
-% [note_audio,Fe] = audioread('Notes/La#_8.wav');
-% [note_audio,Fe] = audioread('Notes/Si_8.wav');
+% [note_audio,Fe] = audioread('Accords/Ginv.wav');
 
 %% Algorithme bitch
-plot_FFT=1;
+
+% Matlab Debug
+plot_FFT=0;
+plot_FFT_couleur = 1;
 n_trames_fft_plot=3;
 
-seuil = 0.02;
-long_trame = 512;
-trame = zeros(1,long_trame);
-n_trames = ceil(length(note_audio)/long_trame);
-% n_trames = 266;
-note_det = 0;
+% Constantes
+SEUIL_INTENSITE = 0.02;
+DECALAGE_AUTOCORR = 64;
+LONG_TRAME = 512;
+DEVIATION_ECART_PEAK_MAX = 6;
+N_TRAMES_TO_SKIP = 2;
+N_TRAMES_TO_KEEP = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
+RATIO_PEAK_FFT = 16; % Ratio entre hauteur peak accepté et intensité trame
+
+% Variables
+n_trames = ceil(length(note_audio)/LONG_TRAME);
+trame = zeros(1,LONG_TRAME);
 log_intensite = zeros(1,n_trames);
-
-decalage = 64;
-autocorr_trame = zeros(1,2*decalage+1);
-
-
-deviation_ecart_peak_max = 6;
-log_periodique = zeros(1,n_trames);
-n_trames_son = 0;
-n_trames_to_skip = 2;
-n_trames_to_keep = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
-
 freq_trames=zeros(3,n_trames);
+autocorr_trame = zeros(1,2*DECALAGE_AUTOCORR+1);
+log_periodique = zeros(1,n_trames);
 
 oscillation_dB = 1;
 % Conception du filtre passe-haut
@@ -78,24 +76,25 @@ f_coupure2 = freq_max_gamme/(Fe/2);
 [b2,a2] = sos2tf(sos2, gain_global2);
 
 % Analyse du son par trames
+n_trames_son = 0;
 for n_trame = 1:n_trames
     
     % Formation de la trame
     if(n_trame==n_trames)
-        n_derniere_trame = length(note_audio)-(n_trames-1)*long_trame;
-        trame = [note_audio(long_trame*(n_trames-1)+1:long_trame*(n_trames-1)+n_derniere_trame)',zeros(1,long_trame-n_derniere_trame)];
+        n_derniere_trame = length(note_audio)-(n_trames-1)*LONG_TRAME;
+        trame = [note_audio(LONG_TRAME*(n_trames-1)+1:LONG_TRAME*(n_trames-1)+n_derniere_trame)',zeros(1,LONG_TRAME-n_derniere_trame)];
     else
-        trame  = note_audio(long_trame*(n_trame-1)+1:long_trame*n_trame)';
+        trame  = note_audio(LONG_TRAME*(n_trame-1)+1:LONG_TRAME*n_trame)';
     end
     % Détection d'intensité
     intensite = mean(abs(trame));
     log_intensite(n_trame)=intensite;
     
-    if(intensite>seuil) % Si c'est un son
+    if(intensite>SEUIL_INTENSITE) % Si c'est un son
         
         n_trames_son = n_trames_son + 1;
-        if(n_trames_son>n_trames_to_skip)
-            n_trame_analyse = n_trames_son-n_trames_to_skip;
+        if(n_trames_son>N_TRAMES_TO_SKIP)
+            n_trame_analyse = n_trames_son-N_TRAMES_TO_SKIP;
             
             % Filtrage de la trame
             % Passe-haut
@@ -103,20 +102,20 @@ for n_trame = 1:n_trames
             % Passe-bas
             trame=filter(b2,a2,trame);
             
-            if(n_trame_analyse<=n_trames_to_keep)
+            if(n_trame_analyse<=N_TRAMES_TO_KEEP)
                 
                 % Padding
                 
-                trame_pad = [zeros(1,decalage), trame, zeros(1,decalage)];
+                trame_pad = [zeros(1,DECALAGE_AUTOCORR), trame, zeros(1,DECALAGE_AUTOCORR)];
                 
                 
                 % Autocorrélation
                 somme = 0;
-                for v = -decalage:decalage
-                    for n = 1:(long_trame - decalage)
-                        somme = somme + trame_pad(n+decalage)*trame_pad(n+v+decalage);
+                for v = -DECALAGE_AUTOCORR:DECALAGE_AUTOCORR
+                    for n = 1:(LONG_TRAME - DECALAGE_AUTOCORR)
+                        somme = somme + trame_pad(n+DECALAGE_AUTOCORR)*trame_pad(n+v+DECALAGE_AUTOCORR);
                     end
-                    autocorr_trame(v+decalage+1) = somme;
+                    autocorr_trame(v+DECALAGE_AUTOCORR+1) = somme;
                 end
                 
                 
@@ -137,7 +136,7 @@ for n_trame = 1:n_trames
             % Si c'est les premiers peaks, initialiser le vecteur de log
             % pour des raisons d'efficacité. On ne garde que deux
             if((n_trame_analyse)==1)
-                log_peaks=zeros(n_trames_to_keep,n_peaks);
+                log_peaks=zeros(N_TRAMES_TO_KEEP,n_peaks);
             end
             
             
@@ -152,7 +151,7 @@ for n_trame = 1:n_trames
                     log_peaks(2,:)=peaks;
                     periodique=1;
                     for k=1:length(log_peaks)
-                        if(abs(log_peaks(1,k)-log_peaks(2,k))>deviation_ecart_peak_max) 
+                        if(abs(log_peaks(1,k)-log_peaks(2,k))>DEVIATION_ECART_PEAK_MAX)
                             periodique=0;
                         end
                     end
@@ -164,26 +163,29 @@ for n_trame = 1:n_trames
             
             
             % Détection des notes
-            %TODO : Tableau de 3 notes
-            %TODO : Éviter les harmoniques en C
+            % TODO : Ne faire l'analyse fréquentielle qu'au début de la
+            % note
             if(periodique)
-                FFT_trame = fft(hanning(long_trame)'.*trame);
+                FFT_trame = fft(hanning(LONG_TRAME)'.*trame);
                 mag_FFT_trame =  abs(FFT_trame);
                 % Détection de peaks
                 % Étape 1 : Trouver l'indice i_fin de fin de gamme
-                i_fin = floor(freq_max_gamme*long_trame/Fe+1);
+                i_fin = floor(freq_max_gamme*LONG_TRAME/Fe+1);
                 % Étape 2 : Chercher les peaks jusqu'à l'indice i
                 n_peaks_FFT = 0;
                 peaks_FFT = ones(1,3);
+                seuil_peak_FFT = log_intensite(n_trame)*RATIO_PEAK_FFT;
                 for k = 3:(i_fin-2)
-                    if(mag_FFT_trame(k)>mag_FFT_trame(k-1) && mag_FFT_trame(k)>mag_FFT_trame(k-2))
-                        if(mag_FFT_trame(k)>mag_FFT_trame(k+1) && mag_FFT_trame(k)>mag_FFT_trame(k+2))
-                            n_peaks_FFT=n_peaks_FFT+1;
-                            peaks_FFT (1,n_peaks_FFT)= k;
+                    if(mag_FFT_trame(k)>seuil_peak_FFT)
+                        if(mag_FFT_trame(k)>mag_FFT_trame(k-1) && mag_FFT_trame(k)>mag_FFT_trame(k-2))
+                            if(mag_FFT_trame(k)>mag_FFT_trame(k+1) && mag_FFT_trame(k)>mag_FFT_trame(k+2))
+                                n_peaks_FFT=n_peaks_FFT+1;
+                                peaks_FFT (1,n_peaks_FFT)= k;
+                            end
                         end
                     end
                 end
-                freq_trames(:,n_trame) = (peaks_FFT-1)/(long_trame)*Fe;
+                freq_trames(:,n_trame) = (peaks_FFT-1)/(LONG_TRAME)*Fe;
                 if(n_trame_analyse==2)
                     freq_trames(n_trame-1) = freq_trames(n_trame);
                 end
@@ -195,13 +197,21 @@ for n_trame = 1:n_trames
             plot(peaks,autocorr_trame(peaks),'ro')
             title('Autocorrélation et détection de peaks')
             
-            if(periodique&&plot_FFT&&n_trame_analyse<=n_trames_fft_plot)
+            if(periodique && plot_FFT && n_trame_analyse<=n_trames_fft_plot)
                 figure()
-                plot(mag_FFT_trame(1:128));
+                plot(mag_FFT_trame(1:40));
             end
             
-            peaks;
+            if(periodique && plot_FFT_couleur)
+                figure(30)
+                hold on
+                color = 1 - 4*intensite;
+                plot(mag_FFT_trame(1:40),'Color',[color,color,color]);
+            end
             
+            if(n_trame==156 || n_trame==157)
+                peaks;
+            end
         end
     else % si l'intensité est sous le seuil
         n_trames_son=0;
@@ -224,7 +234,7 @@ title('Fréquence des trames')
 
 figure()
 x=1:length(log_intensite);
-x=x*long_trame/Fe;
+x=x*LONG_TRAME/Fe;
 plot(x,log_intensite)
 title('Intensité des trames')
 

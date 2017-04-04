@@ -2,8 +2,8 @@ clear all
 clc
 close all
 
-[note,fs]=audioread('Accords/Ginv.m4a');
+[note,fs]=audioread('Arpege do plus accord do maj do maj re maj re maj mi min mi min mi maj do inversé.m4a');
 
 note_8 = decimate(note,6);
 newfs=fs/6;
-audiowrite('Accords/Ginv.wav',note_8,newfs);
+audiowrite('Accords/Arpege_mongol.wav',note_8,newfs);
