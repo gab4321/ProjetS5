@@ -15,7 +15,7 @@ clc
 % [note_audio,Fe] = audioread('Bruits/Enregistrement_8.wav');
 %
 %
-% [note_audio,Fe] = audioread('Notes/Do_8.wav');
+ [note_audio,Fe] = audioread('Notes/Do_8.wav');
 % [note_audio,Fe] = audioread('Notes/Do#_8.wav');
 % [note_audio,Fe] = audioread('Notes/Re_8.wav');
 % [note_audio,Fe] = audioread('Notes/Re#_8.wav');
@@ -23,7 +23,7 @@ clc
 % [note_audio,Fe] = audioread('Notes/Fa_8.wav');
 % [note_audio,Fe] = audioread('Notes/Fa#_8.wav');
 % [note_audio,Fe] = audioread('Notes/Sol_8.wav');
- [note_audio,Fe] = audioread('Notes/Sol#_8.wav');
+% [note_audio,Fe] = audioread('Notes/Sol#_8.wav');
 % [note_audio,Fe] = audioread('Notes/La_8.wav');
 % [note_audio,Fe] = audioread('Notes/La#_8.wav');
 % [note_audio,Fe] = audioread('Notes/Si_8.wav');
@@ -39,26 +39,30 @@ clc
 
 %% Algorithme bitch
 
-% Matlab Debug
+% Matlab Debug (genre si t'es en C, bah C ca)
 plot_FFT=0;
-plot_FFT_couleur = 1;
+plot_FFT_couleur = 0;
 n_trames_fft_plot=3;
+conversion_en_notes=0;
 
 % Constantes
 SEUIL_INTENSITE = 0.02;
 DECALAGE_AUTOCORR = 64;
-LONG_TRAME = 512;
-DEVIATION_ECART_PEAK_MAX = 6;
-N_TRAMES_TO_SKIP = 2;
+LONG_TRAME = 512; % À NE PAS CHANGER. Donne la précision fréquentielle
+DEVIATION_ECART_PEAK_MAX = 6; % Tolérance pour la détection de périodicité
+N_TRAMES_TO_SKIP = 1; % Permet d'ignorer la phase transitoire pour l'analyse
 N_TRAMES_TO_KEEP = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
+N_ECH_MOY_INTENSITE = 10; % Nombre d'échantillons pour détection intensité
 RATIO_PEAK_FFT = 16; % Ratio entre hauteur peak accepté et intensité trame
 
 % Variables
 n_trames = ceil(length(note_audio)/LONG_TRAME);
 trame = zeros(1,LONG_TRAME);
-log_intensite = zeros(1,n_trames);
 freq_trames=zeros(3,n_trames);
 autocorr_trame = zeros(1,2*DECALAGE_AUTOCORR+1);
+
+% VARIABLES DEBUG (genre t'es pas capable de faire ça en C bitch)
+log_intensite = zeros(1,n_trames);
 log_periodique = zeros(1,n_trames);
 
 oscillation_dB = 1;
@@ -87,7 +91,7 @@ for n_trame = 1:n_trames
         trame  = note_audio(LONG_TRAME*(n_trame-1)+1:LONG_TRAME*n_trame)';
     end
     % Détection d'intensité
-    intensite = mean(abs(trame));
+    intensite = mean(abs(trame(1:N_ECH_MOY_INTENSITE)));
     log_intensite(n_trame)=intensite;
     
     if(intensite>SEUIL_INTENSITE) % Si c'est un son
@@ -200,18 +204,21 @@ for n_trame = 1:n_trames
             if(periodique && plot_FFT && n_trame_analyse<=n_trames_fft_plot)
                 figure()
                 plot(mag_FFT_trame(1:40));
+                title(['FFT de la trame ' num2str(n_trame_analyse)]);
+                xlabel('Indice k')
+                ylabel('Amplitude')
             end
             
             if(periodique && plot_FFT_couleur)
                 figure(30)
+                title('FFT des trames périodiques');
+                xlabel('Indice k')
+                ylabel('Amplitude')
                 hold on
                 color = 1 - 4*intensite;
                 plot(mag_FFT_trame(1:40),'Color',[color,color,color]);
             end
             
-            if(n_trame==156 || n_trame==157)
-                peaks;
-            end
         end
     else % si l'intensité est sous le seuil
         n_trames_son=0;
@@ -221,25 +228,27 @@ end
 figure()
 area(log_periodique)
 title('Périodicité des trames')
+xlabel('Numéro de trame')
+ylabel('Périodique')
 
 figure()
 
 hold on
 plot(freq_trames(1,:))
-
 plot(freq_trames(2,:))
-
 plot(freq_trames(3,:))
 title('Fréquence des trames')
+xlabel('Numéro de trame')
+ylabel('Fréquence détectée (Hz)')
 
 figure()
 x=1:length(log_intensite);
 x=x*LONG_TRAME/Fe;
 plot(x,log_intensite)
-title('Intensité des trames')
+title(['Intensité des trames, moyenne sur ' num2str(N_ECH_MOY_INTENSITE) ' échantillons'])
+xlabel('Temps (s)')
+ylabel('Intensité')
 
 
 
-
-%% Fonctions
 
