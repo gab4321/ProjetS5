@@ -1,15 +1,15 @@
 #include <stdio.h>
-#include <math.h>
+//#include <math.h>
 #include <dsk6713.h>
 #include "C6713Helper_UdeS.h"
 
 extern far void vectors(); //external function
-extern Uint16 inputsource; //= DSK6713_AIC23_INPUT_LINE;
-extern Uint32 fs;          //= DSK6713_AIC23_FREQ_48KHZ;   //set sampling rate
+// Uint16 inputsource; //= DSK6713_AIC23_INPUT_LINE;
+// extern Uint32 fs= DSK6713_AIC23_FREQ_8KHZ;  //set sampling rate
 
 #define using_bios
-#define DSK6713_AIC23_INPUT_LINE 0x0011
-#define DSK6713_AIC23_INPUT_MIC 0x0015
+//#define DSK6713_AIC23_INPUT_LINE 0x0011
+//#define DSK6713_AIC23_INPUT_MIC 0x0015
 #define LEFT  1                  //data structure for union of 32-bit data
 #define RIGHT 0                  //into two 16-bit data
 
@@ -24,8 +24,8 @@ union {
 DSK6713_AIC23_Config config = { \
 0x0017,  /* 0 DSK6713_AIC23_LEFTINVOL  Left line input channel volume */ \
 0x0017,  /* 1 DSK6713_AIC23_RIGHTINVOL Right line input channel volume */\
-0x01f9,  /* 2 DSK6713_AIC23_LEFTHPVOL  Left channel headphone volume */  \
-0x01f9,  /* 3 DSK6713_AIC23_RIGHTHPVOL Right channel headphone volume */ \
+0x0179,  /* 2 DSK6713_AIC23_LEFTHPVOL  Left channel headphone volume */  \
+0x0179,  /* 3 DSK6713_AIC23_RIGHTHPVOL Right channel headphone volume */ \
 0x0011,  /* 4 DSK6713_AIC23_ANAPATH    Analog audio path control */      \
 0x0000,  /* 5 DSK6713_AIC23_DIGPATH    Digital audio path control */     \
 0x0000,  /* 6 DSK6713_AIC23_POWERDOWN  Power down control */             \
@@ -107,11 +107,14 @@ void comm_poll()					//added for communication/init using polling
 }
 
 
-void CODEC_start() {
+void CODEC_start(Uint32 sample_rate, Uint16 inputsource) 
+{
 	  DSK6713_init();
 
+	 config.regs[4] = inputsource; // select input source
+	  
 	 hAIC23_handle=DSK6713_AIC23_openCodec(0, &config); //handle(pointer) to codec
-	 DSK6713_AIC23_setFreq(hAIC23_handle, fs);  //set sample rate
+	 DSK6713_AIC23_setFreq(hAIC23_handle, sample_rate);  //set sample rate
 	 MCBSP_config(DSK6713_AIC23_DATAHANDLE,&AIC23CfgData);//interface 32 bits toAIC23
 	 MCBSP_start(DSK6713_AIC23_DATAHANDLE, MCBSP_XMIT_START | MCBSP_RCV_START |
 	 	         MCBSP_SRGR_START | MCBSP_SRGR_FRAMESYNC, 220);//start data channel again
@@ -185,11 +188,11 @@ short input_right_sample()                  		//input to right channel
 	 AIC_data.uint=MCBSP_read(DSK6713_AIC23_DATAHANDLE);//read into right channel
 	return(AIC_data.channel[RIGHT]); 				//return right channel data
 }
-void comm_intr()						 	//for communication/init using interrupt
+void comm_intr(Uint32 sample_rate, Uint16 inputsource)	//for communication/init using interrupt
 {
 	poll=0;                        	//0 since not polling
    IRQ_globalDisable();           	//disable interrupts
-   CODEC_start(); //c6713_dsk_init() 	init DSP and codec
+   CODEC_start(sample_rate,inputsource);     //c6713_dsk_init() 	init DSP and codec
 	CODECEventId=MCBSP_getXmtEventId(DSK6713_AIC23_codecdatahandle);//McBSP1 Xmit
 
 #ifndef using_bios						//do not need to point to vector table

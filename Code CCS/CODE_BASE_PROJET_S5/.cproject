@@ -40,8 +40,8 @@
 									<listOptionValue builtIn="false" value="&quot;C:\ti\ccsv7\ccs_base\C6700\dsplib\support\fft&quot;"/>
 									<listOptionValue builtIn="false" value="C:\ti\ccsv7\ccs_base\C6700\dsplib\include"/>
 									<listOptionValue builtIn="false" value="C:\ti\ccsv7\ccs_base\C6xCSL\include"/>
-									<listOptionValue builtIn="false" value="C:\ti\dsk6713\include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/includes}&quot;"/>
+									<listOptionValue builtIn="false" value="C:\ti\dsk6713\include"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C6000_7.4.compilerID.ABI.2114669161" name="Application binary interface (coffabi, eabi) [See 'General' page to edit] (--abi)" superClass="com.ti.ccstudio.buildDefinitions.C6000_7.4.compilerID.ABI" value="com.ti.ccstudio.buildDefinitions.C6000_7.4.compilerID.ABI.coffabi" valueType="enumerated"/>
 								<option id="com.ti.ccstudio.buildDefinitions.C6000_7.4.compilerID.SILICON_VERSION.1131355371" name="Target processor version (--silicon_version, -mv)" superClass="com.ti.ccstudio.buildDefinitions.C6000_7.4.compilerID.SILICON_VERSION" value="6700" valueType="string"/>
@@ -68,9 +68,9 @@
 								<option id="com.ti.ccstudio.buildDefinitions.C6000_7.4.linkerID.LIBRARY.421104545" name="Include library file or command file as input (--library, -l)" superClass="com.ti.ccstudio.buildDefinitions.C6000_7.4.linkerID.LIBRARY" valueType="libs">
 									<listOptionValue builtIn="false" value="&quot;libc.a&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\ti\ccsv7\ccs_base\C6700\dsplib\lib\dsp67x.lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\ti\dsk6713\lib\dsk6713bsl.lib&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\ti\ccsv7\ccs_base\C6xCSL\lib_3x\csl6713.lib&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\ti\ccsv7\tools\compiler\c6000_7.4.20\lib\rts6700.lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\ti\dsk6713\lib\dsk6713bsl.lib&quot;"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C6000_7.4.linkerID.STACK_SIZE.445297627" name="Set C system stack size (--stack_size, -stack)" superClass="com.ti.ccstudio.buildDefinitions.C6000_7.4.linkerID.STACK_SIZE" value="0x1000" valueType="string"/>
 								<option id="com.ti.ccstudio.buildDefinitions.C6000_7.4.linkerID.HEAP_SIZE.1699568643" name="Heap size for C/C++ dynamic memory allocation (--heap_size, -heap)" superClass="com.ti.ccstudio.buildDefinitions.C6000_7.4.linkerID.HEAP_SIZE" value="0x1000" valueType="string"/>

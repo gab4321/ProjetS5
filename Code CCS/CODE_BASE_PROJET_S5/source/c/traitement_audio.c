@@ -202,14 +202,14 @@ void calculFFT(float *TableInputPadder, float *Sortie_FFT,float *w, short *index
 /********************************************************************************************
 fonction qui place le vecteur de la trame dans un vecteur avec Im = 0
 ********************************************************************************************/
-void padderFFT(float *TableFFT, float *TableInputPadder)
+void padderFFT(int *TableFFT, float *TableInputPadder)
 {
     int n;
 
     for (n=0; n<ncorr*2; n++)
     {
         if(n%2 == 0)
-            TableInputPadder[n] = TableFFT[n/2];
+            TableInputPadder[n] = (float)TableFFT[n/2];
         else
             TableInputPadder[n] = 0;
     }
@@ -250,8 +250,9 @@ void AnalyseFFT(float *Sortie_FFT)
 /********************************************************************************************
 Description : genere le prochain echantillon de metronome a jouer
 ********************************************************************************************/
-short GenererMetronome(short *table, int nbexecution, int nbcompteur, int nbValSinus, int *compteurTemps, int *compteurNbFois, int *compteurSinus)
+short GenererMetronome(short table[], int nbexecution, int nbcompteur, int nbValSinus, int *compteurTemps, int *compteurNbFois, int *compteurSinus)
 {
+    static int compteurmesure = 0;
     static int start;
     static short valactuelle;
 
@@ -268,24 +269,55 @@ short GenererMetronome(short *table, int nbexecution, int nbcompteur, int nbValS
 
         valactuelle = table[*compteurSinus];
 
-        if(*compteurSinus++ >= nbValSinus)
+        if (compteurmesure==3)
         {
-            *compteurSinus = 0;
-            *compteurNbFois++;
+            *compteurSinus = *compteurSinus + 2;
+        }
+        else
+        {
+            *compteurSinus = *compteurSinus + 1;
         }
 
-        if(*compteurNbFois >= nbexecution)
-        {
-            start = 0;
-            *compteurSinus = 0;
-            *compteurNbFois = 0;
+        //*compteurSinus = *compteurSinus + 2;
 
+        if(*compteurSinus >= nbValSinus)
+        {
+            *compteurSinus = 0;
+            *compteurNbFois = *compteurNbFois + 1;
+        }
+
+        if (compteurmesure==3)
+        {
+            if(*compteurNbFois >= nbexecution*4)
+            {
+                start = 0;
+                *compteurSinus = 0;
+                *compteurNbFois = 0;
+
+            }
+        }
+        else
+        {
+            if(*compteurNbFois >= nbexecution)
+            {
+                start = 0;
+                *compteurSinus = 0;
+                *compteurNbFois = 0;
+
+            }
         }
     }
 
-    if(*compteurTemps++ >= nbcompteur)
-        *compteurTemps = 0;
+    *compteurTemps = *compteurTemps + 1;
 
+    if(*compteurTemps >= nbcompteur)
+    {
+        *compteurTemps = 0;
+        if (compteurmesure==3)
+            compteurmesure=0;
+        else
+            compteurmesure+=1;
+    }
 
     if(start == 0)
     {
@@ -298,7 +330,7 @@ short GenererMetronome(short *table, int nbexecution, int nbcompteur, int nbValS
 /********************************************************************************************
 Description : genere les parametre de la fonction de metronome selon les parametre selectionnés
 ********************************************************************************************/
-void InitialiseMetronome(short *table, int *nbexecution, int *nbcompteur, int nbValSinus,int volumeMet, int freqMet,int tempsMet, int BPM)
+void InitialiseMetronome(short table[], int *nbexecution, int *nbcompteur, int nbValSinus,int volumeMet, int freqMet,int tempsMet, int BPM)
 {
     int n;
 

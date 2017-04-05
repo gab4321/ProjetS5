@@ -11,22 +11,25 @@ Auteurs:
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "dsk6713_aic23.h"
-#include "C6713Helper_UdeS.h"
+#include <C6713Helper_UdeS.h>
+#include <dsk6713_aic23.h>
+#include "dsk6713.h"
 #include "filtrerCascadeIIR.h"
 #include "traitement_audio.h"
 
 /********************************************************************************************
 Variables globales pour utiliser AIC du DSK
 ********************************************************************************************/
-Uint32 fs=DSK6713_AIC23_FREQ_8KHZ; 	// Fréquence d'échantillonnage selon les définitions du DSK
+//Uint32 fs=DSK6713_AIC23_FREQ_8KHZ; 	// Fréquence d'échantillonnage selon les définitions du DSK
 #define DSK6713_AIC23_INPUT_LINE 0x0011
 #define DSK6713_AIC23_INPUT_MIC 0x0015
-Uint16 inputsource=DSK6713_AIC23_INPUT_MIC; // selection de l'entrée (A MODIFIER SELON LENTRÉE)
+//Uint16 inputsource=DSK6713_AIC23_INPUT_MIC; // selection de l'entrée (A MODIFIER SELON LENTRÉE)
 
 #define GAUCHE 0 // Haut-parleur gauche
 #define DROIT  1 // Haut-parleur droit
 union {Uint32 uint; short channel[2];} AIC23_data; // Pour contenir les deux signaux
+
+extern void vectors();
 
 /********************************************************************************************
 // Variables globales
@@ -50,7 +53,7 @@ int nbEchDebugMic = 0;
 int IsSound = 0;
 int TrameEnr = 0;
 int GainNum = 1;
-int SeuilSon = 200;
+int SeuilSon = 500;
 /********************************************************************************************/
 // variables pour la correlation
 #define Ncorr 256         //N
@@ -89,14 +92,16 @@ int FlagLed0 = 0;
 /********************************************************************************************/
 // variables pour faire des tests
 float TableCos3[Ncorr] = {0};
-int debug = 1;
+int debug = 0;
 int F2 = 1000;
+short SON = 0;
+int desactiveINT = 1;
 /********************************************************************************************/
 // variables pour le metronome
 int BPM = 120;      //frequence du metronome
 int freqMet = 600; // frequence du son du metronome
 #define Lsinus 40     // longueur du vecteur pour contenir la frequence
-int TempsMet = 30;   // en millisecondes
+int TempsMet = 50;   // en millisecondes
 
 short TabFreqMet[Lsinus]; // table contenant un sinus a la freq du metronome
 
@@ -111,6 +116,7 @@ int volumeMet = 20000;
 
 int compteurTemps = 0;      // compteur
 int NbTemps = 0;        //temps en nombre de periode (1/Fs) avant le prochain coup de metronome
+int metready = 0;
 
 /********************************************************************************************
 Description : Fonction principale
@@ -123,18 +129,20 @@ int main()
     // Initialisation des variables intermédiaires w(n-i) pour les IIR
     init_w();
 
-    // Démarrage des interruptions (CODEC)
-    comm_intr();
-
     // fenetre de hamming
     GenHamming(FenHamming);
 
     // initialisation des parametres du metronome
     InitialiseMetronome(TabFreqMet, &Nbexecution, &NbTemps, (int)Lsinus, volumeMet, freqMet, TempsMet, BPM);
+    metready = 1;
+
+    // Démarrage des interruptions (CODEC)
+    comm_intr(DSK6713_AIC23_FREQ_8KHZ, DSK6713_AIC23_INPUT_MIC);
     /********************************************************************************************/
 
     if(debug)
     {
+
         /********************************************************************************************/
         // METTRE ICI TOUT LES PETITS TESTS POUR DEBUG
 
@@ -152,11 +160,12 @@ int main()
         ApplicationFentre(FenHamming, TableCos3);
 
         // paddage de 0 du vecteur generé
-        padderFFT(TableCos3, TableInputPadder);
+        //padderFFT(TableCos3, TableInputPadder);
 
         // fft du vecteur paddé
         calculFFT(TableInputPadder, Sortie_FFT, w,index);
         n = 1;
+
 
         /********************************************************************************************/
     }
@@ -181,6 +190,9 @@ int main()
                 // CORRELATION //
                 /////////////////
 
+                desactiveINT = 0; //desactive tout dans linterrupt pendant le traitement de signaux
+                // A FAIRE PLUS CLEAN!!!
+
                 // decalage + corr asm
                 CorrManip(VectCorr, VectPadder);
                 CorrASM(VectPadder, VectRep, ncorr, ndecalage, nrep, npadd);
@@ -193,10 +205,10 @@ int main()
                 /////////////////
 
                 // application fenetre hamming
-                ApplicationFentre(FenHamming, (float*)VectCorr);
+                //ApplicationFentre(FenHamming, (float*)VectCorr);
 
                 // paddage de 0 de la trame
-                padderFFT((float*)VectCorr, TableInputPadder);
+                padderFFT(VectCorr, TableInputPadder);
 
                 // fft du vecteur paddé
                 calculFFT(TableInputPadder, Sortie_FFT, w,index);
@@ -207,6 +219,7 @@ int main()
                 // POUR REENREGITRER UNE TRAME
                 IsSound = 0;
                 TrameEnr = 0;
+                desactiveINT = 1;
             }
         }
         /********************************************************************************************/
@@ -218,22 +231,34 @@ Description : Code executé à toutes les interruptions du CODEC audio
 ********************************************************************************************/
 interrupt void c_int11()
 {
+    if(desactiveINT == 1)
+    {
     /********************************************************************************************/
     // VARIABLES
-	static int inputInterne = 1, FLT_IIR = 0, debugMic = 0, outputDAC = 1, Traitement_Audio = 0, IsMetronome = 0;
+	static int inputInterne = 0, FLT_IIR = 1, debugMic = 0, outputDAC = 1, Traitement_Audio = 1, IsMetronome = 0;
     static int n=1;
-	short x, y, y1;
+	static short x, y, y1;
     /********************************************************************************************/
+
+	/** NOTES: IL FAUT ACTIVER FAIRE UN OUTPUT SAMPLE POUR RENTRER PLUSIEUR FOIS DANS CET INTERRUPT**/
 
     /********************************************************************************************/
 	// CRÉATION DE LÉCHANTILLON
-    if(inputInterne)
+    if(inputInterne == 1)
+    {
         // Génération de la fréquence désirée provenant du bouton glissoir GEL (A CHANGER DANS LONGLET EXPRESSIONS)
         x = (short)(2000*cos(2*PI*frq/Fs*n++));
+    }
     else
+    {
         // Capture de l'échantillon provenant de l'entrée
         // MODIFIER INPUT_SOURCE POUR LINE_IN OU MIC_IN
         x = (short)(input_sample()*GainNum);
+        //SON = input_left_sample();
+        //output_left_sample(SON * GainNum);
+
+    }
+
     /********************************************************************************************/
 
     /********************************************************************************************/
@@ -269,7 +294,7 @@ interrupt void c_int11()
         // enregistrement des trames pour effectuer lautocorellation et la FFT
         else if(IsSound == 1 && TrameEnr == 0)
         {
-            VectCorr[nbEchADC] = (int)y;
+            VectCorr[nbEchADC] = (int)y;//*0.1;
             nbEchADC++;
 
             if(nbEchADC >= ncorr)
@@ -283,13 +308,16 @@ interrupt void c_int11()
 
     /********************************************************************************************/
     // PARTI POUR GÉNÉRER UN MÉTRONOME
-    if(IsMetronome)
+    if(IsMetronome == 1)
     {
-        sonMetronome = GenererMetronome(TabFreqMet, Nbexecution, NbTemps, (int)Lsinus, &compteurTemps, &compteurNBfois, &compteurNBsinus);
+        if(metready == 1)
+        {
+            sonMetronome = GenererMetronome(TabFreqMet, Nbexecution, NbTemps, (int)Lsinus, &compteurTemps, &compteurNBfois, &compteurNBsinus);
 
-        AIC23_data.channel[DROIT] =  sonMetronome;
-        AIC23_data.channel[GAUCHE] = sonMetronome;
-        output_sample(AIC23_data.uint);         // Sortir les deux signaux sur HEADPHONE
+            AIC23_data.channel[DROIT] =  sonMetronome;
+            AIC23_data.channel[GAUCHE] = sonMetronome;
+            output_sample(AIC23_data.uint);         // Sortir les deux signaux sur HEADPHONE
+        }
     }
     /********************************************************************************************/
 
@@ -317,4 +345,5 @@ interrupt void c_int11()
     /********************************************************************************************/
 
 	return;
+    }
 }

@@ -25,7 +25,7 @@ void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep);
 void calculFFT(float *TableInputPadder, float *Sortie_FFT,float *w, short *index);
 
 // fonction qui fait un vecteur padder de 0 au Imaginaire pour la FFT
-void padderFFT(float *TableFFT, float *TableInputPadder);
+void padderFFT(int *TableFFT, float *TableInputPadder);
 
 // fonction qui genre une fenetre de hamming
 void GenHamming(float* FenHamming);
