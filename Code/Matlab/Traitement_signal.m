@@ -6,16 +6,16 @@ clc
 %% Fichiers audio
 
 
-% Fe = 8000;
-% Long_sinus = Fe*10; % 10 secondes
-% n = 1:Long_sinus;
-% freq_norm = 2*pi*n/Fe*300;
-% note_audio = sin(freq_norm)';
+ Fe = 8000;
+ Long_sinus = Fe*10; % 10 secondes
+ n = 1:Long_sinus;
+ freq_norm = 2*pi*n/Fe*250;
+ note_audio = sin(freq_norm)';
 
 % [note_audio,Fe] = audioread('Bruits/Enregistrement_8.wav');
 %
 %
- [note_audio,Fe] = audioread('Notes/Do_8.wav');
+% [note_audio,Fe] = audioread('Notes/Do_8.wav');
 % [note_audio,Fe] = audioread('Notes/Do#_8.wav');
 % [note_audio,Fe] = audioread('Notes/Re_8.wav');
 % [note_audio,Fe] = audioread('Notes/Re#_8.wav');
@@ -52,7 +52,7 @@ LONG_TRAME = 512; % À NE PAS CHANGER. Donne la précision fréquentielle
 DEVIATION_ECART_PEAK_MAX = 6; % Tolérance pour la détection de périodicité
 N_TRAMES_TO_SKIP = 1; % Permet d'ignorer la phase transitoire pour l'analyse
 N_TRAMES_TO_KEEP = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
-N_ECH_MOY_INTENSITE = 10; % Nombre d'échantillons pour détection intensité
+N_ECH_MOY_INTENSITE = 64; % Nombre d'échantillons pour détection intensité
 RATIO_PEAK_FFT = 16; % Ratio entre hauteur peak accepté et intensité trame
 
 % Variables
@@ -90,6 +90,13 @@ for n_trame = 1:n_trames
     else
         trame  = note_audio(LONG_TRAME*(n_trame-1)+1:LONG_TRAME*n_trame)';
     end
+
+    % Filtrage de la trame
+    % Passe-haut
+    trame=filter(b1,a1,trame);
+    % Passe-bas
+    trame=filter(b2,a2,trame);
+    
     % Détection d'intensité
     intensite = mean(abs(trame(1:N_ECH_MOY_INTENSITE)));
     log_intensite(n_trame)=intensite;
@@ -99,20 +106,11 @@ for n_trame = 1:n_trames
         n_trames_son = n_trames_son + 1;
         if(n_trames_son>N_TRAMES_TO_SKIP)
             n_trame_analyse = n_trames_son-N_TRAMES_TO_SKIP;
-            
-            % Filtrage de la trame
-            % Passe-haut
-            trame=filter(b1,a1,trame);
-            % Passe-bas
-            trame=filter(b2,a2,trame);
-            
+                       
             if(n_trame_analyse<=N_TRAMES_TO_KEEP)
                 
                 % Padding
-                
                 trame_pad = [zeros(1,DECALAGE_AUTOCORR), trame, zeros(1,DECALAGE_AUTOCORR)];
-                
-                
                 % Autocorrélation
                 somme = 0;
                 for v = -DECALAGE_AUTOCORR:DECALAGE_AUTOCORR
@@ -248,6 +246,7 @@ plot(x,log_intensite)
 title(['Intensité des trames, moyenne sur ' num2str(N_ECH_MOY_INTENSITE) ' échantillons'])
 xlabel('Temps (s)')
 ylabel('Intensité')
+axis([0 x(end) 0 1])
 
 
 
