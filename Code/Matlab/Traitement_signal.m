@@ -27,15 +27,16 @@ clc
 % [note_audio,Fe] = audioread('Notes/La_8.wav');
 % [note_audio,Fe] = audioread('Notes/La#_8.wav');
 % [note_audio,Fe] = audioread('Notes/Si_8.wav');
+% [note_audio,Fe] = audioread('Notes/DO8Va.wav');
 %
 % [note_audio,Fe] = audioread('Gammes/Gamme_majeur_Do_8.wav');
 % [note_audio,Fe] = audioread('Accords/Arpege_mongol.wav');
 
-% [note_audio,Fe] = audioread('Accords/C.wav');
-% [note_audio,Fe] = audioread('Accords/C+G.wav');
+% [note_audio,Fe] = audioread('Accords/C.wav'); % Problème en 1024
+% [note_audio,Fe] = audioread('Accords/C+G.wav'); % Problème en 1024
 % [note_audio,Fe] = audioread('Accords/D.wav');
- [note_audio,Fe] = audioread('Accords/Dmin.wav'); % Fonctionne pas
-% [note_audio,Fe] = audioread('Accords/Ginv.wav');
+% [note_audio,Fe] = audioread('Accords/Dmin.wav'); % Fonctionne pas
+ [note_audio,Fe] = audioread('Accords/Ginv.wav');
 
 figure()
 plot(note_audio)
@@ -51,15 +52,21 @@ plot_FFT_couleur = 1;
 n_trames_fft_plot=3;
 conversion_en_notes=0; % TODO
 
+%==========TODO : Autocorr sur 512, FFT sur 1024 =============%
+
 % Constantes
 SEUIL_INTENSITE = 0.02;
 DECALAGE_AUTOCORR = 64;
-LONG_TRAME = 1024; % À NE PAS CHANGER. Donne la précision fréquentielle
+LONG_TRAME = 512; % À NE PAS CHANGER. Donne la précision fréquentielle
+N_ECH_MOY_INTENSITE = 512; % Nombre d'échantillons pour détection intensité
 DEVIATION_ECART_PEAK_MAX = 6; % Tolérance pour la détection de périodicité
 N_TRAMES_TO_SKIP = 1; % Permet d'ignorer la phase transitoire pour l'analyse
 N_TRAMES_TO_KEEP = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
-N_ECH_MOY_INTENSITE = 64; % Nombre d'échantillons pour détection intensité
 RATIO_PEAK_FFT = 16; % Ratio entre hauteur peak accepté et intensité trame
+FREQ_PASSE_HAUT = 250;
+FREQ_PASSE_BAS = 520;
+OSCILLATION_DB = 1;
+OFFSET_INDICE_FIN_GAMME = 1;
 
 % Variables
 n_trames = ceil(length(note_audio)/LONG_TRAME);
@@ -71,17 +78,17 @@ autocorr_trame = zeros(1,2*DECALAGE_AUTOCORR+1);
 log_intensite = zeros(1,n_trames);
 log_periodique = zeros(1,n_trames);
 
-oscillation_dB = 1;
+
 % Conception du filtre passe-haut
-f_coupure1 = 250/(Fe/2);
-[A,B,C,D] = cheby1(10,oscillation_dB , f_coupure1,'high');
+f_coupure1 = FREQ_PASSE_HAUT/(Fe/2);
+[A,B,C,D] = cheby1(10,OSCILLATION_DB , f_coupure1,'high');
 [sos1,gain_global1] = ss2sos(A,B,C,D, 'up', 'inf');
 [b1,a1] = sos2tf(sos1, gain_global1);
 
 % Conception du filtre passe-bas
-freq_max_gamme = 520;
-f_coupure2 = freq_max_gamme/(Fe/2);
-[A,B,C,D] = cheby1(10, oscillation_dB, f_coupure2,'low');
+
+f_coupure2 = FREQ_PASSE_BAS/(Fe/2);
+[A,B,C,D] = cheby1(10, OSCILLATION_DB, f_coupure2,'low');
 [sos2,gain_global2] = ss2sos(A,B,C,D, 'up', 'inf');
 [b2,a2] = sos2tf(sos2, gain_global2);
 
@@ -181,11 +188,11 @@ for n_trame = 1:n_trames
                 mag_FFT_trame =  abs(FFT_trame);
                 % Détection de peaks
                 % Étape 1 : Trouver l'indice i_fin de fin de gamme
-                i_fin = floor(freq_max_gamme*LONG_TRAME/Fe+1);
+                i_fin = floor(FREQ_PASSE_BAS*LONG_TRAME/Fe+OFFSET_INDICE_FIN_GAMME);
                 % Étape 2 : Chercher les peaks jusqu'à l'indice i
                 n_peaks_FFT = 0;
                 peaks_FFT = ones(1,3);
-                seuil_peak_FFT = log_intensite(n_trame)*RATIO_PEAK_FFT;
+                seuil_peak_FFT = log_intensite(n_trame)*RATIO_PEAK_FFT
                 for k = 3:(i_fin-2)
                     if(mag_FFT_trame(k)>seuil_peak_FFT)
                         if(mag_FFT_trame(k)>mag_FFT_trame(k-1) && mag_FFT_trame(k)>mag_FFT_trame(k-2))
@@ -202,6 +209,7 @@ for n_trame = 1:n_trames
                 end
             end
             
+
             figure(2)
             plot(autocorr_trame);
             hold on
