@@ -5,12 +5,12 @@ clc
 
 %% Fichiers audio
 
-
- Fe = 8000;
- Long_sinus = Fe*10; % 10 secondes
- n = 1:Long_sinus;
- freq_norm = 2*pi*n/Fe*250;
- note_audio = sin(freq_norm)';
+% 
+%  Fe = 8000;
+%  Long_sinus = Fe*10; % 10 secondes
+%  n = 1:Long_sinus;
+%  freq_norm = 2*pi*n/Fe*250;
+%  note_audio = sin(freq_norm)';
 
 % [note_audio,Fe] = audioread('Bruits/Enregistrement_8.wav');
 %
@@ -34,21 +34,27 @@ clc
 % [note_audio,Fe] = audioread('Accords/C.wav');
 % [note_audio,Fe] = audioread('Accords/C+G.wav');
 % [note_audio,Fe] = audioread('Accords/D.wav');
-% [note_audio,Fe] = audioread('Accords/Dmin.wav'); % Fonctionne pas
+ [note_audio,Fe] = audioread('Accords/Dmin.wav'); % Fonctionne pas
 % [note_audio,Fe] = audioread('Accords/Ginv.wav');
 
-%% Algorithme bitch
+figure()
+plot(note_audio)
+title('Note audio')
+xlabel('No d''échantillon')
+ylabel('Intensité')
 
-% Matlab Debug (genre si t'es en C, bah C ca)
+%% Algorithme
+
+% Matlab Debug
 plot_FFT=0;
-plot_FFT_couleur = 0;
+plot_FFT_couleur = 1;
 n_trames_fft_plot=3;
-conversion_en_notes=0;
+conversion_en_notes=0; % TODO
 
 % Constantes
 SEUIL_INTENSITE = 0.02;
 DECALAGE_AUTOCORR = 64;
-LONG_TRAME = 512; % À NE PAS CHANGER. Donne la précision fréquentielle
+LONG_TRAME = 1024; % À NE PAS CHANGER. Donne la précision fréquentielle
 DEVIATION_ECART_PEAK_MAX = 6; % Tolérance pour la détection de périodicité
 N_TRAMES_TO_SKIP = 1; % Permet d'ignorer la phase transitoire pour l'analyse
 N_TRAMES_TO_KEEP = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
@@ -61,7 +67,7 @@ trame = zeros(1,LONG_TRAME);
 freq_trames=zeros(3,n_trames);
 autocorr_trame = zeros(1,2*DECALAGE_AUTOCORR+1);
 
-% VARIABLES DEBUG (genre t'es pas capable de faire ça en C bitch)
+% VARIABLES DEBUG
 log_intensite = zeros(1,n_trames);
 log_periodique = zeros(1,n_trames);
 
@@ -91,17 +97,20 @@ for n_trame = 1:n_trames
         trame  = note_audio(LONG_TRAME*(n_trame-1)+1:LONG_TRAME*n_trame)';
     end
 
-    % Filtrage de la trame
-    % Passe-haut
-    trame=filter(b1,a1,trame);
-    % Passe-bas
-    trame=filter(b2,a2,trame);
+
     
     % Détection d'intensité
     intensite = mean(abs(trame(1:N_ECH_MOY_INTENSITE)));
     log_intensite(n_trame)=intensite;
     
+    
     if(intensite>SEUIL_INTENSITE) % Si c'est un son
+           
+    % Filtrage de la trame
+    % Passe-haut
+    trame=filter(b1,a1,trame);
+    % Passe-bas
+    trame=filter(b2,a2,trame);
         
         n_trames_son = n_trames_son + 1;
         if(n_trames_son>N_TRAMES_TO_SKIP)
@@ -193,7 +202,7 @@ for n_trame = 1:n_trames
                 end
             end
             
-            figure(1)
+            figure(2)
             plot(autocorr_trame);
             hold on
             plot(peaks,autocorr_trame(peaks),'ro')
@@ -214,7 +223,7 @@ for n_trame = 1:n_trames
                 ylabel('Amplitude')
                 hold on
                 color = 1 - 4*intensite;
-                plot(mag_FFT_trame(1:40),'Color',[color,color,color]);
+                plot(mag_FFT_trame(20:80),'Color',[color,color,color]);
             end
             
         end
