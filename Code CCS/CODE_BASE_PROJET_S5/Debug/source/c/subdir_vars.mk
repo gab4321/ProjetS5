@@ -8,6 +8,7 @@ SHELL = cmd.exe
 C_SRCS += \
 ../source/c/C6713Helper_UdeS.c \
 ../source/c/MAIN.c \
+../source/c/SPI_driver.c \
 ../source/c/bitrev_index.c \
 ../source/c/filtrerCascadeIIR.c \
 ../source/c/gen_w_r2.c \
@@ -16,6 +17,7 @@ C_SRCS += \
 C_DEPS += \
 ./source/c/C6713Helper_UdeS.d \
 ./source/c/MAIN.d \
+./source/c/SPI_driver.d \
 ./source/c/bitrev_index.d \
 ./source/c/filtrerCascadeIIR.d \
 ./source/c/gen_w_r2.d \
@@ -24,6 +26,7 @@ C_DEPS += \
 OBJS += \
 ./source/c/C6713Helper_UdeS.obj \
 ./source/c/MAIN.obj \
+./source/c/SPI_driver.obj \
 ./source/c/bitrev_index.obj \
 ./source/c/filtrerCascadeIIR.obj \
 ./source/c/gen_w_r2.obj \
@@ -32,6 +35,7 @@ OBJS += \
 OBJS__QUOTED += \
 "source\c\C6713Helper_UdeS.obj" \
 "source\c\MAIN.obj" \
+"source\c\SPI_driver.obj" \
 "source\c\bitrev_index.obj" \
 "source\c\filtrerCascadeIIR.obj" \
 "source\c\gen_w_r2.obj" \
@@ -40,6 +44,7 @@ OBJS__QUOTED += \
 C_DEPS__QUOTED += \
 "source\c\C6713Helper_UdeS.d" \
 "source\c\MAIN.d" \
+"source\c\SPI_driver.d" \
 "source\c\bitrev_index.d" \
 "source\c\filtrerCascadeIIR.d" \
 "source\c\gen_w_r2.d" \
@@ -48,6 +53,7 @@ C_DEPS__QUOTED += \
 C_SRCS__QUOTED += \
 "../source/c/C6713Helper_UdeS.c" \
 "../source/c/MAIN.c" \
+"../source/c/SPI_driver.c" \
 "../source/c/bitrev_index.c" \
 "../source/c/filtrerCascadeIIR.c" \
 "../source/c/gen_w_r2.c" \

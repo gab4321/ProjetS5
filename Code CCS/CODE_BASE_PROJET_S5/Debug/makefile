@@ -15,6 +15,7 @@ ORDERED_OBJS += \
 "./source/asm/corr.obj" \
 "./source/c/C6713Helper_UdeS.obj" \
 "./source/c/MAIN.obj" \
+"./source/c/SPI_driver.obj" \
 "./source/c/bitrev_index.obj" \
 "./source/c/filtrerCascadeIIR.obj" \
 "./source/c/gen_w_r2.obj" \
@@ -156,8 +157,8 @@ CODE_BASE_PROJET_S5.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)
-	-$(RM) "source\asm\IIR_2ndOrder_directII_ASM.obj" "source\asm\Vectors_intr.obj" "source\asm\corr.obj" "source\c\C6713Helper_UdeS.obj" "source\c\MAIN.obj" "source\c\bitrev_index.obj" "source\c\filtrerCascadeIIR.obj" "source\c\gen_w_r2.obj" "source\c\traitement_audio.obj" 
-	-$(RM) "source\c\C6713Helper_UdeS.d" "source\c\MAIN.d" "source\c\bitrev_index.d" "source\c\filtrerCascadeIIR.d" "source\c\gen_w_r2.d" "source\c\traitement_audio.d" 
+	-$(RM) "source\asm\IIR_2ndOrder_directII_ASM.obj" "source\asm\Vectors_intr.obj" "source\asm\corr.obj" "source\c\C6713Helper_UdeS.obj" "source\c\MAIN.obj" "source\c\SPI_driver.obj" "source\c\bitrev_index.obj" "source\c\filtrerCascadeIIR.obj" "source\c\gen_w_r2.obj" "source\c\traitement_audio.obj" 
+	-$(RM) "source\c\C6713Helper_UdeS.d" "source\c\MAIN.d" "source\c\SPI_driver.d" "source\c\bitrev_index.d" "source\c\filtrerCascadeIIR.d" "source\c\gen_w_r2.d" "source\c\traitement_audio.d" 
 	-$(RM) "source\asm\IIR_2ndOrder_directII_ASM.d" "source\asm\Vectors_intr.d" "source\asm\corr.d" 
 	-@echo 'Finished clean'
 	-@echo ' '

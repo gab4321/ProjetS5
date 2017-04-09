@@ -34,13 +34,20 @@ void GenHamming(float* FenHamming);
 void ApplicationFentre(float *Fenetre, float *TableFFT);
 
 // fonction qui analyse la FFT
-void AnalyseFFT(float *Sortie_FFT);
+int AnalyseFFT_Singuliere(float *Sortie_FFT);
+
+// fonction qui analyse la FFT
+void AnalyseFFT_Accord(float *Sortie_FFT);
 
 // fonction qui genere le son de metronome a une frequence désirée (BPM)
-short GenererMetronome(short *table, int nbexecution, int nbcompteur, int nbValSinus, int *compteurTemps, int *compteurNbFois, int *compteurSinus);
+short GenererMetronome(short table[], int nbexecution, int nbcompteur, int nbValSinus, int *compteurTemps, int *compteurNbFois, int *compteurSinus, int *compteurmesure);
 
 // genere le sinus pour le metronome
 void InitialiseMetronome(short *table, int *nbexecution, int *nbcompteur, int nbValSinus,int volumeMet, int freqMet,int tempsMet, int BPM);
 
+// donne la note associée a la frequence (pas verif 1ere harmonique)
+int TrouveNote_WO_Harm(float freq, float erreur);
+
+int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float erreur, float erreur2, float erreur3);
 
 #endif
