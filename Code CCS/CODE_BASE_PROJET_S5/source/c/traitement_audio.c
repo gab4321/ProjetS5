@@ -92,6 +92,26 @@ void CorrManip(int *VectCorr, int *VectPadder)
         VectPadder[i] = 0;
     }
 }
+int intensitesynchrone(int *Vectacq)
+{
+
+    int i;
+    int intensite = 0;
+
+    for(i = 0; i < ntrame; i++)
+    {
+        if(Vectacq[i] < 0)
+        {
+            Vectacq[i] = -1*Vectacq[i];
+        }
+        intensite = intensite + Vectacq[i];
+    }
+
+    intensite = intensite/ntrame;
+
+    return intensite;
+
+}
 
 /********************************************************************************************
 fonction qui test lintensite du son avant de lancer lautocorrelation
@@ -276,10 +296,12 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
     static int note;
     int ind1 = 0, ind2 = 0, ind3 = 0, ind4 = 0, i = 0;
     int max1 = 0, max2  = 0, max3 = 0, max4 = 0;
-    float freq1;
-    float freq2;
-    float freq3;
-    float freq4;
+    int maxverif = 0;
+    int indverif = 0;
+    float freq1 = 0;
+    float freq2 = 0;
+    float freq3 = 0;
+    float freq4 = 0;
 
     float erreur = 6; //erreur sur la frequence en Hz pour la fondamentale
     float erreur2 = 12; //erreur sur la frequence en Hz pour la premiere harmonique
@@ -297,6 +319,29 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
         }
     }
 
+    for(i = (ind1-MargeElim); i < (ind1 + MargeElim); i++)
+    {
+        Sortie_FFT[i] = 0;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // VERIF DAMPLITUDE relatif a max1
+    for(i = 31; i < 66; i++ )   // bornes selon trame de 1024 points a 8000 Khz
+    {
+        if(Sortie_FFT[i] > maxverif)
+        {
+            maxverif = Sortie_FFT[i];
+            indverif = i;
+        }
+    }
+
+    if(max1 < 2*maxverif)
+    {
+        //return -1;
+    }
+    /////////////////////////////////////////////////////////////////////////////////////////////
+
+
     // recherche la premiere harmonique (OCTAVE 5)
     for(i = 66; i <= 130 ; i++ )  // bornes selon trame de 1024 points a 8000 Khz
     {
@@ -305,6 +350,12 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
             max2 = Sortie_FFT[i];
             ind2 = i;
         }
+    }
+
+    // delete le peak
+    for(i = (ind2-MargeElim); i < (ind2 + MargeElim); i++)
+    {
+        Sortie_FFT[i] = 0;
     }
 
     ///////////////////// OCTAVE 6 -> CAS BIZARR ///////////////////
@@ -318,6 +369,7 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
         }
     }
 
+    // delete le peak
     for(i = (ind3-MargeElim); i < (ind3 + MargeElim); i++)
     {
         Sortie_FFT[i] = 0;
@@ -332,6 +384,8 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
         }
     }
 
+
+
     ///////////////////// OCTAVE 6 -> CAS BIZARR ///////////////////
 
     // frequence de la fondamentale (OCTAVE 4)
@@ -345,6 +399,7 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
 
     // frequence de la troisieme harmonique (OCTAVE 6) -> possible deuxieme peak
     freq4 = (float)(ind4*(float)Fs/(float)ntrame);
+
 
     // boucle de comparaison aux frequences singulieres (fondamentales et 1ere harmoniques)
 
@@ -414,6 +469,8 @@ void AnalyseFFT_Accord(float *Sortie_FFT)
         {
             max3 = Sortie_FFT[i];
             ind3 = i;
+            if(max3 < 0.25*max2)
+                ind3 = 0;
         }
     }
 
@@ -489,174 +546,177 @@ Description : trouver si une frequence correspond a une note (AVEC 1ere HARMONIQ
 ********************************************************************************************/
 int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float erreur, float erreur2, float erreur3)
 {
-    int notes = -1;
+    static int notes = -1;
 
     // Do
     if(freq1 > (Do-erreur) && freq1 < (Do+erreur))
     {
-        if(freq2 > 2*Do-erreur2 && freq2 < 2*Do+erreur2)
-        {
-            if((freq3 >4*Do-erreur3 && freq3 < 4*Do+erreur3) || (freq4 >4*Do-erreur3 && freq4 < 4*Do+erreur3))
+        //if(freq2 > 2*Do-erreur2 && freq2 < 2*Do+erreur2)
+        //{
+            if((freq3 >4*Do-erreur3 && freq3 < 4*Do+erreur3) || (freq4 >4*Do-erreur3 && freq4 < 4*Do+erreur3) || (freq2 > 2*Do-erreur2 && freq2 < 2*Do+erreur2))
             {
                 //printf("note: Do\n ");
                 //Buff_Do++;
                 notes = 1;
             }
-        }
+        //}
+    }
+    // Si
+    else if(freq1 > (Si-erreur) && freq1 < (Si+erreur))
+    {
+        //if(freq2 > 2*Si-erreur2 && freq2 < 2*Si+erreur2)
+        //{
+            if((freq3 > 4*Si-erreur3 && freq3 < 4*Si+erreur3) || (freq4 > 4*Si-erreur3 && freq4 < 4*Si+erreur3) || (freq2 > 2*Si-erreur2 && freq2 < 2*Si+erreur2))
+            {
+               // printf("note: Si\n ");
+                //Buff_Si++;
+                notes = 12;
+            }
+        //}
     }
 
     // Do_dies
-    if(freq1 > (Do_dies-erreur) && freq1 < (Do_dies+erreur))
+    else if(freq1 > (Do_dies-erreur) && freq1 < (Do_dies+erreur))
     {
-        if(freq2 > 2*Do_dies-erreur2 && freq2 < 2*Do_dies+erreur2)
-        {
-            if((freq3 > 4*Do_dies-erreur3 && freq3 < 4*Do_dies+erreur3) || (freq4 > 4*Do_dies-erreur3 && freq4 < 4*Do_dies+erreur3))
+        //if(freq2 > 2*Do_dies-erreur2 && freq2 < 2*Do_dies+erreur2)
+        //{
+            if((freq3 > 4*Do_dies-erreur3 && freq3 < 4*Do_dies+erreur3) || (freq4 > 4*Do_dies-erreur3 && freq4 < 4*Do_dies+erreur3) || (freq2 > 2*Do_dies-erreur2 && freq2 < 2*Do_dies+erreur2))
             {
                 //printf("note: Do dies\n ");
                 //Buff_Do_dies++;
                 notes = 2;
             }
-        }
+        //}
     }
 
     // Re
-    if(freq1 > (Re-erreur) && freq1 < (Re+erreur))
+    else if(freq1 > (Re-erreur) && freq1 < (Re+erreur))
     {
-        if(freq2 > 2*Re-erreur2 && freq2 < 2*Re+erreur2)
-        {
-            if((freq3 > 4*Re-erreur3 && freq3 < 4*Re+erreur3) || (freq4 > 4*Re-erreur3 && freq4 < 4*Re+erreur3))
+        //if(freq2 > 2*Re-erreur2 && freq2 < 2*Re+erreur2)
+       // {
+            if((freq3 > 4*Re-erreur3 && freq3 < 4*Re+erreur3) || (freq4 > 4*Re-erreur3 && freq4 < 4*Re+erreur3) || (freq2 > 2*Re-erreur2 && freq2 < 2*Re+erreur2))
             {
                 //printf("note: Re\n ");
                 //Buff_Re++;
                 notes = 3;
             }
-        }
+       // }
     }
 
     // Re_dies
-    if(freq1 > (Re_dies-erreur) && freq1 < (Re_dies+erreur))
+    else if(freq1 > (Re_dies-erreur) && freq1 < (Re_dies+erreur))
     {
-        if(freq2 > 2*Re_dies-erreur2 && freq2 < 2*Re_dies+erreur2)
-        {
-            if((freq3 > 4*Re_dies-erreur3 && freq3 < 4*Re_dies+erreur3) || (freq4 > 4*Re_dies-erreur3 && freq4 < 4*Re_dies+erreur3))
+       // if(freq2 > 2*Re_dies-erreur2 && freq2 < 2*Re_dies+erreur2)
+        //{
+            if((freq3 > 4*Re_dies-erreur3 && freq3 < 4*Re_dies+erreur3) || (freq4 > 4*Re_dies-erreur3 && freq4 < 4*Re_dies+erreur3) || (freq2 > 2*Re_dies-erreur2 && freq2 < 2*Re_dies+erreur2))
             {
                 //printf("note: Re dies\n ");
                 //Buff_Re_dies++;
                 notes = 4;
             }
-        }
+        //}
     }
 
     // Mi
-    if(freq1 > (Mi-erreur) && freq1 < (Mi+erreur))
+    else if(freq1 > (Mi-erreur) && freq1 < (Mi+erreur))
     {
-        if(freq2 > 2*Mi-erreur2 && freq2 < 2*Mi+erreur2)
-        {
-            if((freq3 > 4*Mi-erreur3 && freq3 < 4*Mi+erreur3) || (freq4 > 4*Mi-erreur3 && freq4 < 4*Mi+erreur3))
+        //if(freq2 > 2*Mi-erreur2 && freq2 < 2*Mi+erreur2)
+       // {
+            if((freq3 > 4*Mi-erreur3 && freq3 < 4*Mi+erreur3) || (freq4 > 4*Mi-erreur3 && freq4 < 4*Mi+erreur3) || (freq2 > 2*Mi-erreur2 && freq2 < 2*Mi+erreur2))
             {
-                //printf("note: Mi\n ");
+               // printf("note: Mi\n ");
                 //Buff_Mi++;
                 notes = 5;
             }
-        }
+       // }
     }
 
     // Fa
-    if(freq1 > (Fa-erreur) && freq1 < (Fa+erreur))
+    else if(freq1 > (Fa-erreur) && freq1 < (Fa+erreur))
     {
-        if(freq2 > 2*Fa-erreur2 && freq2 < 2*Fa+erreur2)
-        {
-            if((freq3 > 4*Fa-erreur3 && freq3 < 4*Fa+erreur3) || (freq4 > 4*Fa-erreur3 && freq4 < 4*Fa+erreur3))
+       // if(freq2 > 2*Fa-erreur2 && freq2 < 2*Fa+erreur2)
+       // {
+            if((freq3 > 4*Fa-erreur3 && freq3 < 4*Fa+erreur3) || (freq4 > 4*Fa-erreur3 && freq4 < 4*Fa+erreur3) || (freq2 > 2*Fa-erreur2 && freq2 < 2*Fa+erreur2))
             {
-                //printf("note: Fa\n ");
+               //printf("note: Fa\n ");
                 //Buff_Fa++;
                 notes = 6;
-            }
-        }
+           }
+        //}
     }
 
     // Fa_dies
-    if(freq1 > (Fa_dies-erreur) && freq1 < (Fa_dies+erreur))
+    else if(freq1 > (Fa_dies-erreur) && freq1 < (Fa_dies+erreur))
     {
-        if(freq2 > 2*Fa_dies-erreur2 && freq2 < 2*Fa_dies+erreur2)
-        {
-            if((freq3 > 4*Fa_dies-erreur3 && freq3 < 4*Fa_dies+erreur3) || (freq4 > 4*Fa_dies-erreur3 && freq4 < 4*Fa_dies+erreur3))
+       // if(freq2 > 2*Fa_dies-erreur2 && freq2 < 2*Fa_dies+erreur2)
+        //{
+            if((freq3 > 4*Fa_dies-erreur3 && freq3 < 4*Fa_dies+erreur3) || (freq4 > 4*Fa_dies-erreur3 && freq4 < 4*Fa_dies+erreur3) || (freq2 > 2*Fa_dies-erreur2 && freq2 < 2*Fa_dies+erreur2))
             {
                 //printf("note: Fa dies\n ");
                 //Buff_Fa_dies++;
                 notes = 7;
             }
-        }
+       // }
     }
 
     // Sol
-    if(freq1 > (Sol-erreur) && freq1 < (Sol+erreur))
+    else if(freq1 > (Sol-erreur) && freq1 < (Sol+erreur))
     {
-        if(freq2 > 2*Sol-erreur2 && freq2 < 2*Sol+erreur2)
-        {
-            if((freq3 > 4*Sol-erreur3 && freq3 < 4*Sol+erreur3) || (freq4 > 4*Sol-erreur3 && freq4 < 4*Sol+erreur3))
+        //if(freq2 > 2*Sol-erreur2 && freq2 < 2*Sol+erreur2)
+       // {
+            if((freq3 > 4*Sol-erreur3 && freq3 < 4*Sol+erreur3) || (freq4 > 4*Sol-erreur3 && freq4 < 4*Sol+erreur3) || (freq2 > 2*Sol-erreur2 && freq2 < 2*Sol+erreur2))
             {
                 //printf("note: Sol\n ");
                 //Buff_Sol++;
                 notes = 8;
             }
-        }
+        //}
     }
 
     // Sol_dies
-    if(freq1 > (Sol_dies-erreur) && freq1 < (Sol_dies+erreur))
+    else if(freq1 > (Sol_dies-erreur) && freq1 < (Sol_dies+erreur))
     {
-        if(freq2 > 2*Sol_dies-erreur2 && freq2 < 2*Sol_dies+erreur2)
-        {
-            if((freq3 > 4*Sol_dies-erreur3 && freq3 < 4*Sol_dies+erreur3) || (freq4 > 4*Sol_dies-erreur3 && freq4 < 4*Sol_dies+erreur3))
+        //if(freq2 > 2*Sol_dies-erreur2 && freq2 < 2*Sol_dies+erreur2)
+       // {
+            if((freq3 > 4*Sol_dies-erreur3 && freq3 < 4*Sol_dies+erreur3) || (freq4 > 4*Sol_dies-erreur3 && freq4 < 4*Sol_dies+erreur3) || (freq2 > 2*Sol_dies-erreur2 && freq2 < 2*Sol_dies+erreur2))
             {
                 //printf("note: Sol dies\n ");
                 //Buff_Sol_dies++;
                 notes = 9;
             }
-        }
+        //}
     }
 
     // La
-    if(freq1 > (La-erreur) && freq1 < (La+erreur))
+    else if(freq1 > (La-erreur) && freq1 < (La+erreur))
     {
-        if(freq2 > 2*La-erreur2 && freq2 < 2*La+erreur2)
-        {
-            if((freq3 > 4*La-erreur3 && freq3 < 4*La+erreur3) || (freq4 > 4*La-erreur3 && freq4 < 4*La+erreur3))
+        //if(freq2 > 2*La-erreur2 && freq2 < 2*La+erreur2)
+        //{
+            if((freq3 > 4*La-erreur3 && freq3 < 4*La+erreur3) || (freq4 > 4*La-erreur3 && freq4 < 4*La+erreur3) || (freq2 > 2*La-erreur2 && freq2 < 2*La+erreur2))
             {
                 //printf("note: La\n ");
                // Buff_La++;
                 notes = 10;
             }
-        }
+        //}
     }
 
     // La_dies
-    if(freq1 > (La_dies-erreur) && freq1 < (La_dies+erreur))
+    else if(freq1 > (La_dies-erreur) && freq1 < (La_dies+erreur))
     {
-        if(freq2 > 2*La_dies-erreur2 && freq2 < 2*La_dies+erreur2)
-        {
-            if((freq3 > 4*La_dies-erreur3 && freq3 < 4*La_dies+erreur3) || (freq4 > 4*La_dies-erreur3 && freq4 < 4*La_dies+erreur3))
+        //if(freq2 > 2*La_dies-erreur2 && freq2 < 2*La_dies+erreur2)
+       // {
+            if((freq3 > 4*La_dies-erreur3 && freq3 < 4*La_dies+erreur3) || (freq4 > 4*La_dies-erreur3 && freq4 < 4*La_dies+erreur3) || (freq2 > 2*La_dies-erreur2 && freq2 < 2*La_dies+erreur2))
             {
                 //printf("note: La dies\n ");
                 //Buff_La_dies++;
                 notes = 11;
             }
-        }
+        //}
     }
-
-    // Si
-    if(freq1 > (Si-erreur) && freq1 < (Si+erreur))
+    else
     {
-        if(freq2 > 2*Si-erreur2 && freq2 < 2*Si+erreur2)
-        {
-            if((freq3 > 4*Si-erreur3 && freq3 < 4*Si+erreur3) || (freq4 > 4*Si-erreur3 && freq4 < 4*Si+erreur3))
-            {
-                //printf("note: Si\n ");
-                //Buff_Si++;
-                notes = 12;
-            }
-        }
+        notes = -1;
     }
 
     return notes;

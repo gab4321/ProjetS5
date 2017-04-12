@@ -45,9 +45,13 @@ short GenererMetronome(short table[], int nbexecution, int nbcompteur, int nbVal
 // genere le sinus pour le metronome
 void InitialiseMetronome(short *table, int *nbexecution, int *nbcompteur, int nbValSinus,int volumeMet, int freqMet,int tempsMet, int BPM);
 
-// donne la note associée a la frequence (pas verif 1ere harmonique)
+// donne la note associée a la frequence (pas dharmonique)
 int TrouveNote_WO_Harm(float freq, float erreur);
 
+// donne la note associée a la frequence (avec harmonique)
 int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float erreur, float erreur2, float erreur3);
+
+// donne la moyenne damplitude de la trame mode synchrone
+int intensitesynchrone(int *Vectacq);
 
 #endif

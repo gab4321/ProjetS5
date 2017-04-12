@@ -19,11 +19,11 @@
    format : 2Q13 */
 const float IIR_COEFFS[][IIR_NB_COEFFS] = {
 // 1er filtre: PASSE BAS pour singulieres
-		{0.025948,0.054688,0.028823,1,-1.8281,0.84793},
-		{0.062545,0.12908,0.066737,1,-1.7479,0.86516},
-		{0.10089,0.20146,0.10088,1,-1.6271,0.89567},
-		{0.11254,0.21768,0.10547,1,-1.5198,0.93432},
-		{0.30015,0.56951,0.27024,1,-1.4703,0.97741},
+		{0.14278,0.28692,0.14414,1,-1.5413,0.65719},
+		{0.29325,0.58997,0.29675,1,-1.1084,0.72595},
+		{0.4109,0.82179,0.4109,1,-0.58637,0.81568},
+		{0.24754,0.49401,0.24649,1,-0.20411,0.89651},
+		{0.49817,0.98783,0.4897,1,-0.012562,0.96641},
 // 2e filtre: PASSE HAUT
 		{0.38823,-0.78361,0.39542,1,-0.74955,0.36069},
 		{0.58416,-1.1577,0.57357,1,-1.6712,0.84034},
@@ -44,7 +44,7 @@ const float IIR_COEFFS[][IIR_NB_COEFFS] = {
 const short IIR_NO_LIGNE[IIR_NB_FILTRES] = {0, 5, 10};
 
 // Gain global de chacun des filtres (format : 2Q13)
-const float IIR_GAINS[IIR_NB_FILTRES] = {0.018435, 0.49956, 0.0050288}; // À COMPLÉTER
+const float IIR_GAINS[IIR_NB_FILTRES] = {0.10641, 0.49956, 0.0050288}; // À COMPLÉTER
 
 // Nombre de filtre d'ordre 2 pour chacune des 6 cascades de filtre
 const short IIR_NB_ORDRE2[IIR_NB_FILTRES] = {5,5,5};
