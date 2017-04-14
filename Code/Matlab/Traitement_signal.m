@@ -5,7 +5,7 @@ clc
 
 %% Fichiers audio
 
-% 
+%
 %  Fe = 8000;
 %  Long_sinus = Fe*10; % 10 secondes
 %  n = 1:Long_sinus;
@@ -35,7 +35,7 @@ clc
 % [note_audio,Fe] = audioread('Accords/C.wav'); % Problème en 1024
 % [note_audio,Fe] = audioread('Accords/C+G.wav'); % Problème en 1024
 % [note_audio,Fe] = audioread('Accords/D.wav');
-% [note_audio,Fe] = audioread('Accords/Dmin.wav'); % Fonctionne pas
+% [note_audio,Fe] = audioread('Accords/Dmin.wav'); % Fonctionne pas. Sauf si on skip 2 trames
  [note_audio,Fe] = audioread('Accords/Ginv.wav');
 
 figure()
@@ -47,8 +47,9 @@ ylabel('Intensité')
 %% Algorithme
 
 % Matlab Debug
+plot_autocorr = 0;
 plot_FFT=0;
-plot_FFT_couleur = 1;
+plot_FFT_couleur = 0;
 n_trames_fft_plot=3;
 conversion_en_notes=0; % TODO
 
@@ -60,13 +61,14 @@ DECALAGE_AUTOCORR = 64;
 LONG_TRAME = 512; % À NE PAS CHANGER. Donne la précision fréquentielle
 N_ECH_MOY_INTENSITE = 512; % Nombre d'échantillons pour détection intensité
 DEVIATION_ECART_PEAK_MAX = 6; % Tolérance pour la détection de périodicité
-N_TRAMES_TO_SKIP = 1; % Permet d'ignorer la phase transitoire pour l'analyse
+N_TRAMES_TO_SKIP = 2; % Permet d'ignorer la phase transitoire pour l'analyse
 N_TRAMES_TO_KEEP = 2; % À NE PAS CHANGER. Seulement pour la détec. périod.
 RATIO_PEAK_FFT = 16; % Ratio entre hauteur peak accepté et intensité trame
+OCTAVE = 4; % Sert pour la conversion fréquences->notes
 FREQ_PASSE_HAUT = 250;
 FREQ_PASSE_BAS = 520;
 OSCILLATION_DB = 1;
-OFFSET_INDICE_FIN_GAMME = 1;
+OFFSET_INDICE_FIN_GAMME = 0; % Normal : 0. Augmenter va chercher harmoniques
 
 % Variables
 n_trames = ceil(length(note_audio)/LONG_TRAME);
@@ -103,8 +105,8 @@ for n_trame = 1:n_trames
     else
         trame  = note_audio(LONG_TRAME*(n_trame-1)+1:LONG_TRAME*n_trame)';
     end
-
-
+    
+    
     
     % Détection d'intensité
     intensite = mean(abs(trame(1:N_ECH_MOY_INTENSITE)));
@@ -112,17 +114,17 @@ for n_trame = 1:n_trames
     
     
     if(intensite>SEUIL_INTENSITE) % Si c'est un son
-           
-    % Filtrage de la trame
-    % Passe-haut
-    trame=filter(b1,a1,trame);
-    % Passe-bas
-    trame=filter(b2,a2,trame);
+        
+        % Filtrage de la trame
+        % Passe-haut
+        trame=filter(b1,a1,trame);
+        % Passe-bas
+        trame=filter(b2,a2,trame);
         
         n_trames_son = n_trames_son + 1;
         if(n_trames_son>N_TRAMES_TO_SKIP)
             n_trame_analyse = n_trames_son-N_TRAMES_TO_SKIP;
-                       
+            
             if(n_trame_analyse<=N_TRAMES_TO_KEEP)
                 
                 % Padding
@@ -192,8 +194,8 @@ for n_trame = 1:n_trames
                 % Étape 2 : Chercher les peaks jusqu'à l'indice i
                 n_peaks_FFT = 0;
                 peaks_FFT = ones(1,3);
-                seuil_peak_FFT = log_intensite(n_trame)*RATIO_PEAK_FFT
-                for k = 3:(i_fin-2)
+                seuil_peak_FFT = log_intensite(n_trame)*RATIO_PEAK_FFT;
+                for k = 3:(i_fin)
                     if(mag_FFT_trame(k)>seuil_peak_FFT)
                         if(mag_FFT_trame(k)>mag_FFT_trame(k-1) && mag_FFT_trame(k)>mag_FFT_trame(k-2))
                             if(mag_FFT_trame(k)>mag_FFT_trame(k+1) && mag_FFT_trame(k)>mag_FFT_trame(k+2))
@@ -203,18 +205,24 @@ for n_trame = 1:n_trames
                         end
                     end
                 end
+                % Élémination des harmoniques
                 freq_trames(:,n_trame) = (peaks_FFT-1)/(LONG_TRAME)*Fe;
                 if(n_trame_analyse==2)
                     freq_trames(n_trame-1) = freq_trames(n_trame);
                 end
+                if(n_trame_analyse==N_TRAMES_TO_KEEP)
+                    detection_notes(freq_trames(:,n_trame),OCTAVE);
+                end
             end
             
-
+            
             figure(2)
-            plot(autocorr_trame);
-            hold on
-            plot(peaks,autocorr_trame(peaks),'ro')
-            title('Autocorrélation et détection de peaks')
+            if(plot_autocorr)
+                plot(autocorr_trame);
+                hold on
+                plot(peaks,autocorr_trame(peaks),'ro')
+                title('Autocorrélation et détection de peaks')
+            end
             
             if(periodique && plot_FFT && n_trame_analyse<=n_trames_fft_plot)
                 figure()
@@ -231,7 +239,7 @@ for n_trame = 1:n_trames
                 ylabel('Amplitude')
                 hold on
                 color = 1 - 4*intensite;
-                plot(mag_FFT_trame(20:80),'Color',[color,color,color]);
+                plot(mag_FFT_trame(1:40),'Color',[color,color,color]);
             end
             
         end
@@ -264,6 +272,7 @@ title(['Intensité des trames, moyenne sur ' num2str(N_ECH_MOY_INTENSITE) ' échan
 xlabel('Temps (s)')
 ylabel('Intensité')
 axis([0 x(end) 0 1])
+
 
 
 
