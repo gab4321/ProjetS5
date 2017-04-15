@@ -304,7 +304,7 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
     float freq4 = 0;
 
     float erreur = 6; //erreur sur la frequence en Hz pour la fondamentale
-    float erreur2 = 12; //erreur sur la frequence en Hz pour la premiere harmonique
+    float erreur2 = 15; //erreur sur la frequence en Hz pour la premiere harmonique
     float erreur3 = 25;
 
     int MargeElim = 10;
@@ -555,7 +555,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 >4*Do-erreur3 && freq3 < 4*Do+erreur3) || (freq4 >4*Do-erreur3 && freq4 < 4*Do+erreur3) || (freq2 > 2*Do-erreur2 && freq2 < 2*Do+erreur2))
             {
-                //printf("note: Do\n ");
+                printf("note: Do\n ");
                 //Buff_Do++;
                 notes = 1;
             }
@@ -568,7 +568,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*Si-erreur3 && freq3 < 4*Si+erreur3) || (freq4 > 4*Si-erreur3 && freq4 < 4*Si+erreur3) || (freq2 > 2*Si-erreur2 && freq2 < 2*Si+erreur2))
             {
-               // printf("note: Si\n ");
+               printf("note: Si\n ");
                 //Buff_Si++;
                 notes = 12;
             }
@@ -582,7 +582,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*Do_dies-erreur3 && freq3 < 4*Do_dies+erreur3) || (freq4 > 4*Do_dies-erreur3 && freq4 < 4*Do_dies+erreur3) || (freq2 > 2*Do_dies-erreur2 && freq2 < 2*Do_dies+erreur2))
             {
-                //printf("note: Do dies\n ");
+                printf("note: Do dies\n ");
                 //Buff_Do_dies++;
                 notes = 2;
             }
@@ -596,7 +596,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*Re-erreur3 && freq3 < 4*Re+erreur3) || (freq4 > 4*Re-erreur3 && freq4 < 4*Re+erreur3) || (freq2 > 2*Re-erreur2 && freq2 < 2*Re+erreur2))
             {
-                //printf("note: Re\n ");
+                printf("note: Re\n ");
                 //Buff_Re++;
                 notes = 3;
             }
@@ -610,7 +610,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*Re_dies-erreur3 && freq3 < 4*Re_dies+erreur3) || (freq4 > 4*Re_dies-erreur3 && freq4 < 4*Re_dies+erreur3) || (freq2 > 2*Re_dies-erreur2 && freq2 < 2*Re_dies+erreur2))
             {
-                //printf("note: Re dies\n ");
+                printf("note: Re dies\n ");
                 //Buff_Re_dies++;
                 notes = 4;
             }
@@ -624,7 +624,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*Mi-erreur3 && freq3 < 4*Mi+erreur3) || (freq4 > 4*Mi-erreur3 && freq4 < 4*Mi+erreur3) || (freq2 > 2*Mi-erreur2 && freq2 < 2*Mi+erreur2))
             {
-               // printf("note: Mi\n ");
+               printf("note: Mi\n ");
                 //Buff_Mi++;
                 notes = 5;
             }
@@ -638,7 +638,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*Fa-erreur3 && freq3 < 4*Fa+erreur3) || (freq4 > 4*Fa-erreur3 && freq4 < 4*Fa+erreur3) || (freq2 > 2*Fa-erreur2 && freq2 < 2*Fa+erreur2))
             {
-               //printf("note: Fa\n ");
+               printf("note: Fa\n ");
                 //Buff_Fa++;
                 notes = 6;
            }
@@ -652,7 +652,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*Fa_dies-erreur3 && freq3 < 4*Fa_dies+erreur3) || (freq4 > 4*Fa_dies-erreur3 && freq4 < 4*Fa_dies+erreur3) || (freq2 > 2*Fa_dies-erreur2 && freq2 < 2*Fa_dies+erreur2))
             {
-                //printf("note: Fa dies\n ");
+                printf("note: Fa dies\n ");
                 //Buff_Fa_dies++;
                 notes = 7;
             }
@@ -666,7 +666,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*Sol-erreur3 && freq3 < 4*Sol+erreur3) || (freq4 > 4*Sol-erreur3 && freq4 < 4*Sol+erreur3) || (freq2 > 2*Sol-erreur2 && freq2 < 2*Sol+erreur2))
             {
-                //printf("note: Sol\n ");
+                printf("note: Sol\n ");
                 //Buff_Sol++;
                 notes = 8;
             }
@@ -680,7 +680,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*Sol_dies-erreur3 && freq3 < 4*Sol_dies+erreur3) || (freq4 > 4*Sol_dies-erreur3 && freq4 < 4*Sol_dies+erreur3) || (freq2 > 2*Sol_dies-erreur2 && freq2 < 2*Sol_dies+erreur2))
             {
-                //printf("note: Sol dies\n ");
+                printf("note: Sol dies\n ");
                 //Buff_Sol_dies++;
                 notes = 9;
             }
@@ -694,7 +694,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*La-erreur3 && freq3 < 4*La+erreur3) || (freq4 > 4*La-erreur3 && freq4 < 4*La+erreur3) || (freq2 > 2*La-erreur2 && freq2 < 2*La+erreur2))
             {
-                //printf("note: La\n ");
+               printf("note: La\n ");
                // Buff_La++;
                 notes = 10;
             }
@@ -708,7 +708,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*La_dies-erreur3 && freq3 < 4*La_dies+erreur3) || (freq4 > 4*La_dies-erreur3 && freq4 < 4*La_dies+erreur3) || (freq2 > 2*La_dies-erreur2 && freq2 < 2*La_dies+erreur2))
             {
-                //printf("note: La dies\n ");
+                printf("note: La dies\n ");
                 //Buff_La_dies++;
                 notes = 11;
             }

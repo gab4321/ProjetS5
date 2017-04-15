@@ -2,7 +2,7 @@
 CODE TEST PROJET S5
 
 Modules présents:
-Corrélation / FFT / Filtres IIR / algorithmes
+Corrélation / FFT / Filtres IIR / algorithmes de detection / comm / affichage / etc.
 
 Auteurs:
 Équipe P4
@@ -18,7 +18,7 @@ Auteurs:
 #include "traitement_audio.h"
 
 /********************************************************************************************
-Variables globales pour utiliser AIC du DSK
+// VARIABLES POUR LE CODEC
 ********************************************************************************************/
 //Uint32 fs=DSK6713_AIC23_FREQ_8KHZ; 	// Fréquence d'échantillonnage selon les définitions du DSK
 #define DSK6713_AIC23_INPUT_LINE 0x0011
@@ -32,14 +32,17 @@ union {Uint32 uint; short channel[2];} AIC23_data; // Pour contenir les deux sig
 extern void vectors();
 
 /********************************************************************************************
-// Fonctions du main
+// FONCTION DU MAIN
 ********************************************************************************************/
 void SetupALL();
 void FonctionTEST();
 
 /********************************************************************************************
-// Variables globales
+// VARIABLES GLOBALES
 ********************************************************************************************/
+
+/********************************************************************************************/
+// variables si utilise le filtre FIR de LAPP 5
 const double PI =3.141592653589793;
 const int Fs = 8000;
 
@@ -49,9 +52,11 @@ const int Fs = 8000;
 #pragma DATA_ALIGN(tampon, TAMPON_L*2); // Requis pour l'adressage circulaire en assembleur
 short tampon[TAMPON_L]={0}; 		// Tampon d'échantillons
 short *pTampon=&tampon[TAMPON_L-1];	// Pointeur sur l'échantillon courant
+
 /********************************************************************************************/
 // Fréquence générée avec le GEL slider (POUR DEBUG)
 float frq=0;
+
 /********************************************************************************************/
 // pour lenregistrement des trames
 int nbEchADC = 0;
@@ -60,6 +65,7 @@ int IsSound = 0;
 int TrameEnr = 0;
 int GainNum = 1;
 int SeuilSon = 2500;//2200
+
 /********************************************************************************************/
 // variables pour la correlation et lenregistrement dune trame audio
 #define Ntrame 1024         //N (longueur de la trame)
@@ -77,8 +83,9 @@ int VectTrame[Ntrame]; // vecteur des donnees pour une trame
 int ndecalage = (int)Ndecalage;
 int nrep = (int)Nrep;
 int npadd = (int)Npadd;
-int VectRep[Nrep]; // vecteur de reponse
+int VectRep[Nrep]; // vecteur de reponse corr
 int VectPadder[Npadd];
+
 /********************************************************************************************/
 // variables pour la FFT
 #pragma DATA_ALIGN(w, 8);
@@ -89,6 +96,7 @@ float w[Ntrame] = {0};
 float Sortie_FFT[Ntrame] = {0};
 float TableInputPadder[2*Ntrame] = {0};
 float FenHamming[Ntrame] = {0};
+
 /********************************************************************************************/
 // variable pour la detection de périodicité
 #define NTestSon 50 //nb de lectures sur lesquelles faire une moyenne pour activé la detection de son
@@ -99,6 +107,7 @@ double scale = 0.60;
 int nVerif = (int)Nverif; //doit detecter n intervalles egales pour conclure que cest periodique
 int TabPeak[Nverif];
 int FlagLed0 = 0;
+
 /********************************************************************************************/
 // variables pour le metronome
 int BPM = 80;      //frequence du metronome
@@ -123,9 +132,9 @@ int compteurTemps = 0;      // compteur incrementer a chaque 1/Fs seconde
 int NbTemps = 0;        //temps en nombre de periode (1/Fs) avant le prochain coup de metronome
 
 int metready = 0;
+
 /********************************************************************************************/
 // buffer nombre de detection pour test de la detection des notes singulieres
-
 int Buff_Do = 0;
 int Buff_Do_dies = 0;
 int Buff_Re = 0;
@@ -138,9 +147,9 @@ int Buff_Sol_dies = 0;
 int Buff_La = 0;
 int Buff_La_dies = 0;
 int Buff_Si = 0;
+
 /********************************************************************************************/
 // variables pour le test initial du mode synchrone
-
 #define Nbnotes 4
 
 int Buff_Notes_Mesure[Nbnotes] = {0};
@@ -150,10 +159,6 @@ int note_act = 0;
 int amp_note_act;
 int MesurePrete = 0;
 int start = 0;
-
-/********************************************************************************************/
-int testsynchrone = 0;
-/********************************************************************************************/
 
 int compteurBuff = 0;
 int Note_actu = -1;
@@ -166,6 +171,12 @@ int trig_acq = 0;
 int Buff_int[50] = {0};
 int Buff_note[50] = {0};
 int ii = 0;
+int traiteaffichage = 0;
+
+/********************************************************************************************/
+// variables de choix de modes
+int testsynchrone = 0;
+int modeaccords = 0;
 
 /********************************************************************************************/
 // variables pour faire des tests
@@ -202,6 +213,7 @@ int main()
         //BOUCLE PRINCIPALE: traitement sonore + communication + affichage des partitions
         while(1)
         {
+            // test pour commencer la sequence dacquisition
             if(testsynchrone == 1 && start_acq == 0)
             {
                 printf("appuyez sur enter pour commencer\n");
@@ -222,14 +234,14 @@ int main()
                 start_acq = 1;
             }
 
-            // test de lintensité du son entrant pour faire traitement ou non
+            // test de lintensité du son entrant pour faire traitement ou non (POUR ASYNCHRONE)
             if(IsSound == 0 && TrameEnr == 1 && !testsynchrone)
             {
                 TestIntensite(TestAmp, ntestson);
                 TrameEnr = 0;
             }
 
-            // traitement audio + detection des notes et accords
+            // traitement audio + detection des notes et accords (POUR ASYNCHRONE)
             if(IsSound == 1 && TrameEnr == 1 && !testsynchrone)
             {
                 // si le son est assez fort le traitement audio est activé
@@ -280,7 +292,7 @@ int main()
                 // A FAIRE LOGIQUE INTERTRAME / MODE SYNCHRONE...
             }
 
-            // traitement audio + detection des notes et accords
+            // traitement audio + detection des notes sdingulieres (POUR MODE ASYNCHRONE)
             if(start_acq && acq_fini && testsynchrone)
             {
                 // desactive le flag dacquisition
@@ -320,7 +332,9 @@ int main()
 
                 Intensite_actu = intensitesynchrone(VectTrame);
 
+                // enregistrement de lintensité
                 Buff_int[ii] = Intensite_actu;
+                // enregistrement de la note detecté
                 Buff_note[ii] = Note_actu;
 
                 ii++;
@@ -333,6 +347,7 @@ int main()
                     compteurNBfois = 0;
                     compteurNBsinus = 0;
                     compteurpulsation = 0;
+                    traiteaffichage = 1;
                 }
 
                 // analyse de la FFT pour accords -> A PERFECTIONNER
@@ -340,10 +355,20 @@ int main()
 
                 //desactiveINT = 1;
 
-                // Wait pour test (AL ENLEVER )
+                // Wait pour test (A ENLEVER )
                 //DSK6713_waitusec(0);
 
-                //output_sample(0);  //pour revenir dans linterrupt
+            }
+
+            // test de detection du temps des notes avec les notes / amplitudes
+            if(traiteaffichage && testsynchrone)
+            {
+
+
+
+
+
+                traiteaffichage = 0;
             }
 
         }
@@ -360,7 +385,7 @@ interrupt void c_int11()
     {
         /********************************************************************************************/
         // VARIABLES
-        static int inputInterne = 0, FLT_IIR = 0, debugMic = 0, outputDAC = 0, Traitement_Audio = 1, IsMetronome = 1;
+        static int inputInterne = 0, FLT_IIR = 1, debugMic = 0, outputDAC = 0, Traitement_Audio = 1, IsMetronome = 1;
         static int fenetre_actif = 1;
         static int n=1;
         static short x, y, y1;
@@ -380,14 +405,13 @@ interrupt void c_int11()
         else
         {
             // Capture de l'échantillon provenant de l'entrée
-            // MODIFIER INPUT_SOURCE POUR LINE_IN OU MIC_IN
+            // MODIFIER INPUT_SOURCE POUR LINE_IN OU MIC_IN SELON LE CHOIX
             x = (short)(input_sample()*GainNum);
         }
         /********************************************************************************************/
 
         /********************************************************************************************/
-        // APPLICATION DUNE FENETRE (POUR LINSTANT -> HAMMING)
-        if(fenetre_actif == 1 && start_acq)
+        // APPLICATION DUNE FENETRE (POUR LINSTANT -> HAMMING VA TRES BIEN)
         {
             if(IsSound == 1 && TrameEnr == 0)
             {
@@ -404,8 +428,10 @@ interrupt void c_int11()
             // ajouter condition pour le mode ACCORD vs mode SINGULIERE!!!
             y1 = filtrerCascadeIIR(2, x); //passe haut IIR
 
-            y = filtrerCascadeIIR(1, y1); //passe bas IIR -> filtre 1 = 4 et 5eme et 6eme octave (POUR SINGULIERE)
-                                          //              -> filtre 3 = 4 eme octave seulement (POUR ACCORD)
+            if(!modeaccords)
+                y = filtrerCascadeIIR(1, y1); //passe bas IIR -> filtre 1 = 4 et 5eme et 6eme octave (POUR SINGULIERE)
+            else
+                y = filtrerCascadeIIR(3, y1); //              -> filtre 3 = 4 eme octave seulement (POUR ACCORD)
         }
         else
         {
@@ -473,7 +499,7 @@ interrupt void c_int11()
         // PARTI POUR GÉNÉRER UN MÉTRONOME + COMPTEUR DU MODE SYNCHRONE
         if(IsMetronome == 1)
         {
-            if(metready == 1 && start_acq == 1)
+            if(metready == 1 && start_acq == 1 && testsynchrone )
             {
                 sonMetronome = GenererMetronome(TabFreqMet, Nbexecution, NbTemps, (int)Lsinus, &compteurTemps, &compteurNBfois, &compteurNBsinus, &compteurpulsation);
 
@@ -481,7 +507,7 @@ interrupt void c_int11()
                 AIC23_data.channel[GAUCHE] = sonMetronome;
                 output_sample(AIC23_data.uint);         // Sortir les deux signaux sur HEADPHONE
 
-                // pour mode synchrone
+                // pour mode synchrone : active lacquisition dune trame synchronisé sur le metronome
                 if(compteurTemps == 15 || compteurTemps == NbTemps/2+15)
                 {
                     trig_acq = 1;
