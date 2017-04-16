@@ -54,4 +54,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
 // donne la moyenne damplitude de la trame mode synchrone
 int intensitesynchrone(int *Vectacq);
 
+// traite les info recolté et donne le timing de la note dans un vecteur
+void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming);
+
 #endif

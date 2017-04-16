@@ -41,7 +41,6 @@ extern int IsSound;
 // variables du main pour la FFT
 extern short index[];
 
-
 // define des frequences de notes
 #define Do 261.63
 #define Do_dies 277.18
@@ -92,6 +91,10 @@ void CorrManip(int *VectCorr, int *VectPadder)
         VectPadder[i] = 0;
     }
 }
+
+/********************************************************************************************
+fonction qui fait la moyenne des intensité dune trame en mode synchrone
+********************************************************************************************/
 int intensitesynchrone(int *Vectacq)
 {
 
@@ -137,6 +140,7 @@ void TestIntensite(int *TestAmp, int ntestson)
     }
     else
     {
+        /*
         // printf("pas de son\n");  //a remplacer par des lumieres
         if(FlagLed0==0)
         {
@@ -145,6 +149,7 @@ void TestIntensite(int *TestAmp, int ntestson)
             *CPLD_USER_REG |=0x01;      //allumer led0
             FlagLed0 =1;
         }
+        */
     }
 }
 
@@ -207,6 +212,7 @@ void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep)
         }
     }
 
+    /*
     if(detect == 1)
     {
         //printf("signal periodique\n "); //a remplacer par des lumieres
@@ -221,6 +227,7 @@ void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep)
         *CPLD_USER_REG &=~0x01;      //éteindre led0
         *CPLD_USER_REG |=0x04;      //allumer led2
     }
+    */
 }
 
 /********************************************************************************************
@@ -337,10 +344,10 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
 
     if(max1 < 2*maxverif)
     {
-        //return -1;
+        // voir si on garde ou pas cette condition
+        // return -1;
     }
     /////////////////////////////////////////////////////////////////////////////////////////////
-
 
     // recherche la premiere harmonique (OCTAVE 5)
     for(i = 66; i <= 130 ; i++ )  // bornes selon trame de 1024 points a 8000 Khz
@@ -358,7 +365,7 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
         Sortie_FFT[i] = 0;
     }
 
-    ///////////////////// OCTAVE 6 -> CAS BIZARR ///////////////////
+    ///////////////////// OCTAVE 6  ///////////////////
     // recherche la troisieme harmonique (OCTAVE 6)
     for(i = 131; i <= 255 ; i++ )  // bornes selon trame de 1024 points a 8000 Khz
     {
@@ -375,6 +382,7 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
         Sortie_FFT[i] = 0;
     }
 
+    // recherche la quatrieme harmonique dans loctave 6 (SELON LA NOTE)
     for(i = 131; i <= 255 ; i++ )  // bornes selon trame de 1024 points a 8000 Khz
     {
         if(Sortie_FFT[i] > max4)
@@ -384,14 +392,10 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
         }
     }
 
-
-
-    ///////////////////// OCTAVE 6 -> CAS BIZARR ///////////////////
-
     // frequence de la fondamentale (OCTAVE 4)
     freq1 = (float)(ind1*(float)Fs/(float)ntrame);
 
-    // frequence de la premiere harmonique (OCTAVE 5)
+    // frequence de la premiere harmonique (OCTAVE 5) ->
     freq2 = (float)(ind2*(float)Fs/(float)ntrame);
 
     // frequence de la troisieme harmonique (OCTAVE 6) -> possible premier peak
@@ -401,12 +405,11 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
     freq4 = (float)(ind4*(float)Fs/(float)ntrame);
 
 
-    // boucle de comparaison aux frequences singulieres (fondamentales et 1ere harmoniques)
+    // boucle de comparaison aux frequences singulieres
 
     note = TrouveNote_W_Harm(freq1, freq2, freq3, freq4, erreur, erreur2, erreur3);
 
     return note;
-
 }
 
 /********************************************************************************************
@@ -555,7 +558,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 >4*Do-erreur3 && freq3 < 4*Do+erreur3) || (freq4 >4*Do-erreur3 && freq4 < 4*Do+erreur3) || (freq2 > 2*Do-erreur2 && freq2 < 2*Do+erreur2))
             {
-                printf("note: Do\n ");
+                //printf("note: Do\n ");
                 //Buff_Do++;
                 notes = 1;
             }
@@ -568,7 +571,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*Si-erreur3 && freq3 < 4*Si+erreur3) || (freq4 > 4*Si-erreur3 && freq4 < 4*Si+erreur3) || (freq2 > 2*Si-erreur2 && freq2 < 2*Si+erreur2))
             {
-               printf("note: Si\n ");
+               //printf("note: Si\n ");
                 //Buff_Si++;
                 notes = 12;
             }
@@ -582,7 +585,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*Do_dies-erreur3 && freq3 < 4*Do_dies+erreur3) || (freq4 > 4*Do_dies-erreur3 && freq4 < 4*Do_dies+erreur3) || (freq2 > 2*Do_dies-erreur2 && freq2 < 2*Do_dies+erreur2))
             {
-                printf("note: Do dies\n ");
+               // printf("note: Do dies\n ");
                 //Buff_Do_dies++;
                 notes = 2;
             }
@@ -596,7 +599,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*Re-erreur3 && freq3 < 4*Re+erreur3) || (freq4 > 4*Re-erreur3 && freq4 < 4*Re+erreur3) || (freq2 > 2*Re-erreur2 && freq2 < 2*Re+erreur2))
             {
-                printf("note: Re\n ");
+                //printf("note: Re\n ");
                 //Buff_Re++;
                 notes = 3;
             }
@@ -610,7 +613,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*Re_dies-erreur3 && freq3 < 4*Re_dies+erreur3) || (freq4 > 4*Re_dies-erreur3 && freq4 < 4*Re_dies+erreur3) || (freq2 > 2*Re_dies-erreur2 && freq2 < 2*Re_dies+erreur2))
             {
-                printf("note: Re dies\n ");
+                //printf("note: Re dies\n ");
                 //Buff_Re_dies++;
                 notes = 4;
             }
@@ -624,7 +627,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*Mi-erreur3 && freq3 < 4*Mi+erreur3) || (freq4 > 4*Mi-erreur3 && freq4 < 4*Mi+erreur3) || (freq2 > 2*Mi-erreur2 && freq2 < 2*Mi+erreur2))
             {
-               printf("note: Mi\n ");
+               //printf("note: Mi\n ");
                 //Buff_Mi++;
                 notes = 5;
             }
@@ -638,7 +641,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*Fa-erreur3 && freq3 < 4*Fa+erreur3) || (freq4 > 4*Fa-erreur3 && freq4 < 4*Fa+erreur3) || (freq2 > 2*Fa-erreur2 && freq2 < 2*Fa+erreur2))
             {
-               printf("note: Fa\n ");
+               //printf("note: Fa\n ");
                 //Buff_Fa++;
                 notes = 6;
            }
@@ -652,7 +655,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*Fa_dies-erreur3 && freq3 < 4*Fa_dies+erreur3) || (freq4 > 4*Fa_dies-erreur3 && freq4 < 4*Fa_dies+erreur3) || (freq2 > 2*Fa_dies-erreur2 && freq2 < 2*Fa_dies+erreur2))
             {
-                printf("note: Fa dies\n ");
+                //printf("note: Fa dies\n ");
                 //Buff_Fa_dies++;
                 notes = 7;
             }
@@ -666,7 +669,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*Sol-erreur3 && freq3 < 4*Sol+erreur3) || (freq4 > 4*Sol-erreur3 && freq4 < 4*Sol+erreur3) || (freq2 > 2*Sol-erreur2 && freq2 < 2*Sol+erreur2))
             {
-                printf("note: Sol\n ");
+                //printf("note: Sol\n ");
                 //Buff_Sol++;
                 notes = 8;
             }
@@ -680,7 +683,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*Sol_dies-erreur3 && freq3 < 4*Sol_dies+erreur3) || (freq4 > 4*Sol_dies-erreur3 && freq4 < 4*Sol_dies+erreur3) || (freq2 > 2*Sol_dies-erreur2 && freq2 < 2*Sol_dies+erreur2))
             {
-                printf("note: Sol dies\n ");
+                //printf("note: Sol dies\n ");
                 //Buff_Sol_dies++;
                 notes = 9;
             }
@@ -694,7 +697,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*La-erreur3 && freq3 < 4*La+erreur3) || (freq4 > 4*La-erreur3 && freq4 < 4*La+erreur3) || (freq2 > 2*La-erreur2 && freq2 < 2*La+erreur2))
             {
-               printf("note: La\n ");
+               //printf("note: La\n ");
                // Buff_La++;
                 notes = 10;
             }
@@ -708,7 +711,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*La_dies-erreur3 && freq3 < 4*La_dies+erreur3) || (freq4 > 4*La_dies-erreur3 && freq4 < 4*La_dies+erreur3) || (freq2 > 2*La_dies-erreur2 && freq2 < 2*La_dies+erreur2))
             {
-                printf("note: La dies\n ");
+                //printf("note: La dies\n ");
                 //Buff_La_dies++;
                 notes = 11;
             }
@@ -812,6 +815,143 @@ int TrouveNote_WO_Harm(float freq, float erreur)
     }
 
     return -1;
+}
+
+/********************************************************************************************
+Description : donne un vecteur avec les timing associés a chaque detection de notes
+********************************************************************************************/
+void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
+{
+    // Indice du buffer timing:
+    // 1: croche
+    // 2: noire
+    // 3: blanche
+    // 4: ronde
+    // -1: rien (un silence ou la fin dune note: le chiffre est mis au commencement de la note on pad avec des -1 apres...)
+
+
+    // initialisation des parametres
+    static int ii = 0;
+    int compteurNoteAlike = 0;
+    int notetemp = -1;
+    int amptemp = 0;
+    int indtemp = 0;
+
+    for(ii = 0; ii < 32; ii++) // 32: le vecteur contient 4 mesures
+    {
+        // ON VOIT LA MEME NOTE EN PARCOURANT LE VECTEUR
+        if(buffernote[ii] == notetemp && notetemp != -1)
+        {
+
+            // on detecte la meme note pour la premiere fois
+            if(bufferintensite[ii] <  0.5*amptemp && compteurNoteAlike == 0) // difference assez grande pour dire que cest une noire et non une croche (A AJUSTER)
+            {
+                buffertiming[indtemp] = 2; // la note est une noire
+
+                //amptemp = Buff_amp[ii]; // voir si on garde cette ligne de code******
+
+                buffertiming[ii] = -1;
+
+                compteurNoteAlike++;
+
+            }
+
+            // on detecte la meme note une deuxieme fois et lamplitude est plus petite que la premiere amplitude enregistrée
+            // voir si cest mieux de comprarer a la derniere amplitude enregistré ou la premiere amplitude quand on detecte
+            // la note pour la premiere fois -> FAIRE ATTENTION AU SUBSTAIN!!!!!
+            // premiere condition remplie pour que ca soit une blanche
+            else if(compteurNoteAlike == 1 && bufferintensite[ii] < 0.5*amptemp)
+            {
+                //  a voir si on prend 3 ou 4 detections pour la blanche
+                //Buff_timing[indtemp] = 3; // la note est une blanche
+
+                buffertiming[ii] = -1;
+
+                compteurNoteAlike++;
+            }
+
+            // on detecte la meme note une troisieme fois et lamplitude est plus petite que la premiere amplitude enregistrée
+            // condition remplie pour que ca soit une blanche
+            else if(compteurNoteAlike == 2 && bufferintensite[ii] < 0.5*amptemp)
+            {
+                buffertiming[indtemp] = 3; // la note est une blanche
+
+                buffertiming[ii] = -1;
+
+                compteurNoteAlike++;
+            }
+
+            // on detecte la meme note une quatrieme fois et lamplitude est plus petite que la premiere amplitude enregistrée
+            // premiere condition remplie pour que ca soit une ronde
+            else if(compteurNoteAlike == 3 && bufferintensite[ii] < 0.5*amptemp)
+            {
+
+                buffertiming[ii] = -1;
+
+                compteurNoteAlike++;
+            }
+
+            // on detecte la meme note une cinquieme fois et lamplitude est plus petite que la premiere amplitude enregistrée
+            // condition remplie pour que ca soit une ronde
+            // ici on detecte 6 fois la meme note car trop de glitch pour detecter 8 fois la meme note...
+            // on saute donc au conclusions immédiatement
+            else if(compteurNoteAlike == 4 && bufferintensite[ii] < 0.5*amptemp)
+            {
+                buffertiming[indtemp] = 4; // la note est une ronde
+
+                buffertiming[ii] = -1;
+                buffertiming[ii+1] = -1;
+                buffertiming[ii+2] = -1;
+
+                ii+=2;
+                compteurNoteAlike = 0;
+            }
+
+
+            // detecte la meme note mais ne baisse pas assez damplitude (on detecte encore une attaque) -> cest une croche
+            else if(bufferintensite[ii] >  0.5*amptemp)
+            {
+
+                notetemp = buffernote[ii];
+                indtemp = ii;
+                amptemp = bufferintensite[ii];
+                compteurNoteAlike = 0;
+
+                buffertiming[indtemp] = 1; // la note est une croche
+
+            }
+        }
+
+        // ON VOIT UN SILENCE EN PARCOURANT LE VECTEUR
+        // NOTE: il faudrait mettre un seuillage pour le synchrone car des fausses detections occurent
+        else if(buffernote[ii] == -1)
+        {
+            notetemp = -1;
+            buffertiming[ii] = -1;
+
+            //indtemp = ii;
+
+        }
+
+        // ON VOIT UNE NOUVELLE NOTE -> on dit que cesxt une croche des le depart, on update par la suite
+        else if(buffernote[ii] != -1)
+        {
+            if(bufferintensite[ii] > 20) // trouver un seuil interessant
+            {
+                notetemp = buffernote[ii];
+                indtemp = ii;
+                amptemp = bufferintensite[ii];
+                compteurNoteAlike = 0;
+
+                buffertiming[indtemp] = 1; // la note est une croche
+            }
+            else
+            {
+                notetemp = -1;
+                buffertiming[ii] = -1;
+            }
+        }
+    }
 }
 
 /********************************************************************************************

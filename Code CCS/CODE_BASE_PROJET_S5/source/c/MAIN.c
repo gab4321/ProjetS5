@@ -36,6 +36,7 @@ extern void vectors();
 ********************************************************************************************/
 void SetupALL();
 void FonctionTEST();
+void printpartitionTest();
 
 /********************************************************************************************
 // VARIABLES GLOBALES
@@ -64,7 +65,7 @@ int nbEchDebugMic = 0;
 int IsSound = 0;
 int TrameEnr = 0;
 int GainNum = 1;
-int SeuilSon = 2500;//2200
+int SeuilSon = 2000;//2200
 
 /********************************************************************************************/
 // variables pour la correlation et lenregistrement dune trame audio
@@ -110,7 +111,7 @@ int FlagLed0 = 0;
 
 /********************************************************************************************/
 // variables pour le metronome
-int BPM = 80;      //frequence du metronome
+int BPM = 120;      //frequence du metronome
 int freqMet = 605; // frequence du son du metronome
 #define Lsinus 40     // longueur du vecteur pour contenir la frequence
 int TempsMet = 50;   // en millisecondes
@@ -168,14 +169,21 @@ int start_acq = 0;
 int clavier = 0;
 int acq_fini = 0;
 int trig_acq = 0;
-int Buff_int[50] = {0};
-int Buff_note[50] = {0};
+int Buff_int[32] = {0};
+int Buff_note[32] = {0};
 int ii = 0;
 int traiteaffichage = 0;
+int timingdetecte = 0;
+
+int compteurNoteAlike = 0;
+int notetemp = -1;
+int amptemp = 0;
+int indtemp = 0;
+int Buff_timing[32] = {0};
 
 /********************************************************************************************/
 // variables de choix de modes
-int testsynchrone = 0;
+int testsynchrone = 1;
 int modeaccords = 0;
 
 /********************************************************************************************/
@@ -185,6 +193,10 @@ int debug = 0;
 int F2 = 1000;
 short SON = 0;
 int desactiveINT = 1;
+
+int Buff_int_test[32] = {5,2,5,2,1,1,5,2,5,2,1,1,5,2,5,2,1,1,5,2,5,2,1,1,5,2,5,2,1,1,5,2};
+int Buff_note_test[32] = {8,8,8,8,8,8,3,3,4,4,4,4,2,2,6,6,6,6,6,6,8,8,8,8,8,8,8,8,8,8,9,9};
+int z;
 
 /********************************************************************************************
 Description : Fonction principale
@@ -203,16 +215,33 @@ int main()
         /********************************************************************************************/
         // METTRE ICI TOUT LES TESTS POUR DEBUG DES MODULES ET AUTRES FONCTIONS
 
-        FonctionTEST();
+        //FonctionTEST();
+
+        // fonction de traitement du timing
+        traitementtiming(Buff_int_test, Buff_note_test, Buff_timing);
+
+        // pour affichage
+        for(z = 0; z < 32; z++)
+        {
+            Buff_note[z] = Buff_note_test[z];
+        }
+
+        // fonction du template daffichage en prinf pour linstant
+        printpartitionTest();
+
+        // line bidon
+        desactiveINT = 0;
 
         /********************************************************************************************/
     }
     else
     {
         /********************************************************************************************/
-        //BOUCLE PRINCIPALE: traitement sonore + communication + affichage des partitions
+        //BOUCLE PRINCIPALE
+        /********************************************************************************************/
         while(1)
         {
+            /********************************************************************************************/
             // test pour commencer la sequence dacquisition
             if(testsynchrone == 1 && start_acq == 0)
             {
@@ -225,6 +254,7 @@ int main()
                 if(clavier == 1)
                 {
                     start_acq = 1;
+                    IsSound = 1;
                     output_sample(0);
                     clavier = 0;
                 }
@@ -234,6 +264,7 @@ int main()
                 start_acq = 1;
             }
 
+            /********************************************************************************************/
             // test de lintensité du son entrant pour faire traitement ou non (POUR ASYNCHRONE)
             if(IsSound == 0 && TrameEnr == 1 && !testsynchrone)
             {
@@ -241,6 +272,7 @@ int main()
                 TrameEnr = 0;
             }
 
+            /********************************************************************************************/
             // traitement audio + detection des notes et accords (POUR ASYNCHRONE)
             if(IsSound == 1 && TrameEnr == 1 && !testsynchrone)
             {
@@ -274,10 +306,10 @@ int main()
                 calculFFT(TableInputPadder, Sortie_FFT, w,index);
 
                 // analyse de la FFT pour notes singulieres -> A PERFECTIONNER
-                Note_actu = AnalyseFFT_Singuliere(Sortie_FFT);
+                //Note_actu = AnalyseFFT_Singuliere(Sortie_FFT);
 
                 // analyse de la FFT pour accords -> A PERFECTIONNER
-                //AnalyseFFT_Accord(Sortie_FFT);
+                AnalyseFFT_Accord(Sortie_FFT);
 
                 // POUR REENREGISTRER UNE TRAME
                 IsSound = 0;
@@ -292,6 +324,7 @@ int main()
                 // A FAIRE LOGIQUE INTERTRAME / MODE SYNCHRONE...
             }
 
+            /********************************************************************************************/
             // traitement audio + detection des notes sdingulieres (POUR MODE ASYNCHRONE)
             if(start_acq && acq_fini && testsynchrone)
             {
@@ -339,7 +372,7 @@ int main()
 
                 ii++;
 
-                if(ii >= 50)
+                if(ii >= 32)
                 {
                     start_acq = 0;
                     ii = 0;
@@ -350,29 +383,32 @@ int main()
                     traiteaffichage = 1;
                 }
 
-                // analyse de la FFT pour accords -> A PERFECTIONNER
-                //AnalyseFFT_Accord(Sortie_FFT);
-
                 //desactiveINT = 1;
 
                 // Wait pour test (A ENLEVER )
                 //DSK6713_waitusec(0);
-
             }
 
+            /********************************************************************************************/
             // test de detection du temps des notes avec les notes / amplitudes
             if(traiteaffichage && testsynchrone)
             {
 
-
-
-
-
+                traitementtiming(Buff_int, Buff_note, Buff_timing);
                 traiteaffichage = 0;
+                timingdetecte = 1;
             }
 
+            /********************************************************************************************/
+            // affichage des mesures a la console
+            if(timingdetecte && testsynchrone)
+            {
+                // METTRE ICI FONCTION DAFFICHAGE A LA CONSOLE !!!!
+
+                printpartitionTest(); // fonction test avec printf qui affiche 4 mesures
+                timingdetecte = 0;
+            }
         }
-        /********************************************************************************************/
     }
 }
 
@@ -412,17 +448,15 @@ interrupt void c_int11()
 
         /********************************************************************************************/
         // APPLICATION DUNE FENETRE (POUR LINSTANT -> HAMMING VA TRES BIEN)
+        if(fenetre_actif && start_acq && IsSound == 1 )
         {
-            if(IsSound == 1 && TrameEnr == 0)
-            {
                 x = x*FenHamming[nbEchADC];
-            }
         }
         /********************************************************************************************/
 
         /********************************************************************************************/
         // FILTRAGE IIR BIQUAD
-        if(FLT_IIR && start_acq)    // LE FILTRE A DEBUGGER!!!!!!!!!!!
+        if(FLT_IIR && start_acq)
         {
             // FILTRAGE OCTAVE 4 et 5 (EN CE MOMENT)
             // ajouter condition pour le mode ACCORD vs mode SINGULIERE!!!
@@ -566,6 +600,220 @@ void SetupALL()
 
     // pour les filtres IIR
     init_w();
+}
+
+/********************************************************************************************
+Description : fait un printf dune partition de 4 mesures (POUR FAIRE DES TESTS PAS BON POUR TEMPS REEL)
+********************************************************************************************/
+void printpartitionTest()
+{
+    int i = 0;
+
+
+    printf("XX|----------------|----------------|----------------|----------------|\n");
+    printf("XX|                |                |                |                |\n");
+
+    // ecrire la ligne de la note SI
+    printf("SI|");
+    for(i = 0; i < 32; i++)
+    {
+        if(Buff_timing[i] == 1 && Buff_note[i] == 12) // croche
+            printf("c-");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 12) // noire
+            printf("n-");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 12) // blanche
+            printf("b-");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 12) // ronde
+            printf("r-");
+        // autre
+        else
+            printf("--"); // aucune note
+
+        if((i+1)%8 == 0 && i != 0)
+            printf("|"); // fin dune mesure
+    }
+    printf("\n");
+
+    // ecrire la ligne de la note LA ou LA #
+    printf("LA|");
+    for(i = 0; i < 32; i++)
+    {
+        // LA #
+        if(Buff_timing[i] == 1 && Buff_note[i] == 11) // croche
+            printf("c#");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 11) // noire
+            printf("n#");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 11) // blanche
+            printf("b#");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 11) // ronde
+            printf("r#");
+
+        // LA
+        else if(Buff_timing[i] == 1 && Buff_note[i] == 10) // croche
+            printf("c-");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 10) // noire
+            printf("n-");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 10) // blanche
+            printf("b-");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 10) // ronde
+            printf("r-");
+        // autre
+        else
+            printf("  "); // aucune note
+
+        if((i+1)%8 == 0 && i != 0)
+            printf("|"); // fin dune mesure
+    }
+    printf("\n");
+
+    // ecrire la ligne de la note SOL ou SOL #
+    printf("SO|");
+    for(i = 0; i < 32; i++)
+    {
+        // SOL #
+        if(Buff_timing[i] == 1 && Buff_note[i] == 9) // croche
+            printf("c#");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 9) // noire
+            printf("n#");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 9) // blanche
+            printf("b#");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 9) // ronde
+            printf("r#");
+
+        // SOL
+        else if(Buff_timing[i] == 1 && Buff_note[i] == 8) // croche
+            printf("c-");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 8) // noire
+            printf("n-");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 8) // blanche
+            printf("b-");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 8) // ronde
+            printf("r-");
+        // autre
+        else
+            printf("--"); // aucune note
+
+        if((i+1)%8 == 0 && i != 0)
+            printf("|"); // fin dune mesure
+    }
+    printf("\n");
+
+    // ecrire la ligne de la note FA ou FA #
+    printf("FA|");
+    for(i = 0; i < 32; i++)
+    {
+        // FA #
+        if(Buff_timing[i] == 1 && Buff_note[i] == 7) // croche
+            printf("c#");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 7) // noire
+            printf("n#");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 7) // blanche
+            printf("b#");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 7) // ronde
+            printf("r#");
+
+        // FA
+        else if(Buff_timing[i] == 1 && Buff_note[i] == 6) // croche
+            printf("c-");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 6) // noire
+            printf("n-");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 6) // blanche
+            printf("b-");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 6) // ronde
+            printf("r-");
+        // autre
+        else
+            printf("  "); // aucune note
+
+        if((i+1)%8 == 0 && i != 0)
+            printf("|"); // fin dune mesure
+    }
+    printf("\n");
+
+    // ecrire la ligne de la note MI
+    printf("MI|");
+    for(i = 0; i < 32; i++)
+    {
+        if(Buff_timing[i] == 1 && Buff_note[i] == 5) // croche
+            printf("c-");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 5) // noire
+            printf("n-");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 5) // blanche
+            printf("b-");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 5) // ronde
+            printf("r-");
+        // autre
+        else
+            printf("--"); // aucune note
+
+        if((i+1)%8 == 0 && i != 0)
+            printf("|"); // fin dune mesure
+    }
+    printf("\n");
+
+    // ecrire la ligne de la note RE ou RE #
+    printf("RE|");
+    for(i = 0; i < 32; i++)
+    {
+        // RE #
+        if(Buff_timing[i] == 1 && Buff_note[i] == 4) // croche
+            printf("c#");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 4) // noire
+            printf("n#");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 4) // blanche
+            printf("b#");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 4) // ronde
+            printf("r#");
+
+        // RE
+        else if(Buff_timing[i] == 1 && Buff_note[i] == 3) // croche
+            printf("c-");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 3) // noire
+            printf("n-");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 3) // blanche
+            printf("b-");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 3) // ronde
+            printf("r-");
+        // autre
+        else
+            printf("  "); // aucune note
+
+        if((i+1)%8 == 0 && i != 0)
+            printf("|"); // fin dune mesure
+    }
+    printf("\n");
+
+    // ecrire la ligne de la note DO ou DO #
+    printf("DO|");
+    for(i = 0; i < 32; i++)
+    {
+        // DO #
+        if(Buff_timing[i] == 1 && Buff_note[i] == 2) // croche
+            printf("c#");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 2) // noire
+            printf("n#");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 2) // blanche
+            printf("b#");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 2) // ronde
+            printf("r#");
+
+        // DO
+        else if(Buff_timing[i] == 1 && Buff_note[i] == 1) // croche
+            printf("c-");
+        else if(Buff_timing[i] == 2 && Buff_note[i] == 1) // noire
+            printf("n-");
+        else if(Buff_timing[i] == 3 && Buff_note[i] == 1) // blanche
+            printf("b-");
+        else if(Buff_timing[i] == 4 && Buff_note[i] == 1) // ronde
+            printf("r-");
+        // autre
+        else
+            printf("--"); // aucune note
+
+        if((i+1)%8 == 0 && i != 0)
+            printf("|"); // fin dune mesure
+    }
+    printf("\n");
 }
 
 /********************************************************************************************
