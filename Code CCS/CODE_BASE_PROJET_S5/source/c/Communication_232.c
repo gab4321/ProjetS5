@@ -68,101 +68,100 @@ void NotesToPIC(int ismodeaccord, int note)
     {
         if(note == 1)           // Re mineur
         {
-            //SPI_Write(0X0001);  // pour pic
-            SPI_Write(0X0031);
+            SPI_Write(0X000D);  // pour pic
+            //SPI_Write(0X0031);
         }
         else if(note == 2)      // Re majeur
         {
-            //SPI_Write(0X0002);  // pour pic
-            SPI_Write(0X0032);
+            SPI_Write(0X000E);  // pour pic
+            //SPI_Write(0X0032);
         }
         else if(note == 3)      // C
         {
-            //SPI_Write(0X0003);  // pour pic
-            SPI_Write(0X0033);
+            SPI_Write(0X000F);  // pour pic
+            //SPI_Write(0X0033);
         }
         else if(note == 4)      // Sol inv
         {
-            //SPI_Write(0X0004);   // pour pic
-            SPI_Write(0X0034);
+            SPI_Write(0X0010);   // pour pic
+            //SPI_Write(0X0034);
         }
         else      // rien
         {
             //SPI_Write(0X000F);    // pour pic
-            SPI_Write(0X0030);
+            //SPI_Write(0X0030);
         }
-
     }
 
     if(ismodeaccord == 0)
     {
         if(note == 1)           // DO
         {
-            //SPI_Write(0X0001);  // pour pic
-            SPI_Write(0X0031);
+            SPI_Write(0X0001);  // pour pic
+            //SPI_Write(0X0031);
         }
         else if(note == 2)      // DO #
         {
-            //SPI_Write(0X0002);  // pour pic
-            SPI_Write(0X0032);
+            SPI_Write(0X0002);  // pour pic
+            //SPI_Write(0X0032);
         }
         else if(note == 3)      // RE
         {
-            //SPI_Write(0X0003);  // pour pic
-            SPI_Write(0X0033);
+            SPI_Write(0X0003);  // pour pic
+            //SPI_Write(0X0033);
         }
         else if(note == 4)      // RE #
         {
-            //SPI_Write(0X0004);   // pour pic
-            SPI_Write(0X0034);
+            SPI_Write(0X0004);   // pour pic
+            //SPI_Write(0X0034);
         }
         else if(note == 5)      // MI
         {
-            //SPI_Write(0X0005);    //pour pic
-            SPI_Write(0X0035);
+            SPI_Write(0X0005);    //pour pic
+            //SPI_Write(0X0035);
         }
         else if(note == 6)      // FA
         {
-            //SPI_Write(0X0006);    //pour pic
-            SPI_Write(0X0036);
+            SPI_Write(0X0006);    //pour pic
+            //SPI_Write(0X0036);
         }
         else if(note == 7)      // FA #
         {
-            //SPI_Write(0X0007);    // pour pic
-            SPI_Write(0X0037);
+            SPI_Write(0X0007);    // pour pic
+            //SPI_Write(0X0037);
         }
         else if(note == 8)      // SOL
         {
-            //SPI_Write(0X0008);    // pour pic
-            SPI_Write(0X0038);
+            SPI_Write(0X0008);    // pour pic
+            //SPI_Write(0X0038);
         }
         else if(note == 9)      // SOL #
         {
-            //SPI_Write(0X0009);    // pour pic
-            SPI_Write(0X0039);
+            SPI_Write(0X0009);    // pour pic
+            //SPI_Write(0X0039);
         }
         else if(note == 10)     // LA
         {
-           // SPI_Write(0X000A);    // pour pic
-            SPI_Write(0X0031);
-            SPI_Write(0X0030);
+            SPI_Write(0X000A);    // pour pic
+            //SPI_Write(0X0031);
+            //SPI_Write(0X0030);
         }
         else if(note == 11)     // LA #
         {
-            //SPI_Write(0X000B);    // pour pic
-            SPI_Write(0X0031);
-            SPI_Write(0X0031);
+            SPI_Write(0X000B);    // pour pic
+            //SPI_Write(0X0031);
+            //SPI_Write(0X0031);
         }
         else if(note == 12)     // SI
         {
-            //SPI_Write(0X000C);    // pour pic
-            SPI_Write(0X0031);
-            SPI_Write(0X0032);
+            SPI_Write(0X000C);    // pour pic
+            //SPI_Write(0X0031);
+            //SPI_Write(0X0032);
         }
         else      // rien
         {
             //SPI_Write(0X000F);    // pour pic
-            SPI_Write(0X0030);
+            //SPI_Write(0X0030);
         }
     }
 
@@ -187,6 +186,39 @@ void printpartitionConsole(int *buffernote, int *buffertiming)
     //printf("XX|----------------|----------------|----------------|----------------|\n");
     //printf("XX|                |                |                |                |\n");
 
+    ////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////
+    // ecrire la ligne de la note SILENCE
+
+    //printf("XX|");
+    SPI_Write(0X0058);
+    SPI_Write(0X0058);
+    SPI_Write(0X007C);
+
+    for(i = 0; i < 32; i++)
+    {
+        if(buffertiming[i] != 5) // croche de silence
+        {
+            //printf("  "); // aucune note
+            SPI_Write(0X002D);
+            SPI_Write(0X002D);
+        }
+        else                     // autre
+        {
+            //printf("ss");
+            SPI_Write(0X0073);
+            SPI_Write(0X0073);
+        }
+
+        if((i+1)%8 == 0 && i != 0)
+        {
+            //printf("|"); // fin dune mesure
+            SPI_Write(0X007C);
+        }
+    }
+    //printf("\n");
+    SPI_Write(0X000A);
+    SPI_Write(0X000D);
 
     ////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////

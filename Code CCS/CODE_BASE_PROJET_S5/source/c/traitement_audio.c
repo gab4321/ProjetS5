@@ -827,7 +827,6 @@ void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
     // 4: ronde
     // -1: rien (un silence ou la fin dune note: le chiffre est mis au commencement de la note on pad avec des -1 apres...)
 
-
     // initialisation des parametres
     static int ii = 0;
     int compteurNoteAlike = 0;
@@ -835,7 +834,7 @@ void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
     int amptemp = 0;
     int indtemp = 0;
 
-    for(ii = 0; ii < 32; ii++) // 32: le vecteur contient 4 mesures
+    for(ii = 0; ii < 32; ii++) // 32: le vecteur contient 4 mesures :)
     {
         // ON VOIT LA MEME NOTE EN PARCOURANT LE VECTEUR
         if(buffernote[ii] == notetemp && notetemp != -1)
@@ -851,7 +850,6 @@ void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
                 buffertiming[ii] = -1;
 
                 compteurNoteAlike++;
-
             }
 
             // on detecte la meme note une deuxieme fois et lamplitude est plus petite que la premiere amplitude enregistrée
@@ -863,7 +861,7 @@ void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
                 //  a voir si on prend 3 ou 4 detections pour la blanche
                 //Buff_timing[indtemp] = 3; // la note est une blanche
 
-                buffertiming[ii] = -1;
+                buffertiming[ii] = 5;
 
                 compteurNoteAlike++;
             }
@@ -874,6 +872,7 @@ void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
             {
                 buffertiming[indtemp] = 3; // la note est une blanche
 
+                buffertiming[ii-1] = -1;
                 buffertiming[ii] = -1;
 
                 compteurNoteAlike++;
@@ -884,7 +883,7 @@ void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
             else if(compteurNoteAlike == 3 && bufferintensite[ii] < 0.5*amptemp)
             {
 
-                buffertiming[ii] = -1;
+                buffertiming[ii] = 5;
 
                 compteurNoteAlike++;
             }
@@ -897,6 +896,7 @@ void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
             {
                 buffertiming[indtemp] = 4; // la note est une ronde
 
+                buffertiming[ii - 1] = -1;
                 buffertiming[ii] = -1;
                 buffertiming[ii+1] = -1;
                 buffertiming[ii+2] = -1;
@@ -905,18 +905,15 @@ void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
                 compteurNoteAlike = 0;
             }
 
-
             // detecte la meme note mais ne baisse pas assez damplitude (on detecte encore une attaque) -> cest une croche
             else if(bufferintensite[ii] >  0.5*amptemp)
             {
-
                 notetemp = buffernote[ii];
                 indtemp = ii;
                 amptemp = bufferintensite[ii];
                 compteurNoteAlike = 0;
 
                 buffertiming[indtemp] = 1; // la note est une croche
-
             }
         }
 
@@ -925,10 +922,11 @@ void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
         else if(buffernote[ii] == -1)
         {
             notetemp = -1;
-            buffertiming[ii] = -1;
+
+            //buffertiming[ii] = -1;
+            buffertiming[ii] = 5;
 
             //indtemp = ii;
-
         }
 
         // ON VOIT UNE NOUVELLE NOTE -> on dit que cesxt une croche des le depart, on update par la suite
@@ -946,7 +944,8 @@ void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
             else
             {
                 notetemp = -1;
-                buffertiming[ii] = -1;
+                //buffertiming[ii] = -1;
+                buffertiming[ii] = 5;
             }
         }
     }

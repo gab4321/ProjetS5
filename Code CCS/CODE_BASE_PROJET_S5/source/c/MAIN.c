@@ -43,6 +43,7 @@ void FonctionTEST();
 void printpartitionTest();
 void DO_TRAITEMENT_ASYNCHRONE();
 void DO_TRAITEMENT_SYNCHRONE();
+void RecepComm();
 
 /********************************************************************************************
 // VARIABLES GLOBALES
@@ -307,181 +308,7 @@ int main()
         /********************************************************************************************/
         if(NewValue == 1)
         {
-            // traite ici quoi faire avec la donnée lue sur le port série
-
-            NewValue = 0;
-
-            // augmentation de la valeur du metronome (120 BPM MAX)
-            if(ReadValue == 0x0077 && !testsynchrone)
-            {
-                BPM+=5;
-
-                if(BPM > 120)
-                    BPM = 120;
-
-                metready = 0;
-
-                // initialisation des parametres du metronome
-                InitialiseMetronome(TabFreqMet, &Nbexecution, &NbTemps, (int)Lsinus, volumeMet, freqMet, TempsMet, BPM);
-                metready = 1;
-            }
-
-            // diminution de la valeur du metronome (80 BPM MIN)
-            if(ReadValue == 0x0073 && !testsynchrone)
-            {
-                BPM-=5;
-
-                if(BPM < 80)
-                    BPM = 80;
-
-                metready = 0;
-
-                // initialisation des parametres du metronome
-                InitialiseMetronome(TabFreqMet, &Nbexecution, &NbTemps, (int)Lsinus, volumeMet, freqMet, TempsMet, BPM);
-                metready = 1;
-            }
-
-            // changement de mode ASYNCHRONE -> SYNCHRONE
-            if(ReadValue == 0x0061 && !testsynchrone)           // 0x0061 -> a
-            {
-                // en attente de la touche enter
-                start_acq = 0;
-
-                ///////////////////////////////////////////////////////////////////////
-                ///////////////////////////////////////////////////////////////////////
-                // METTRE ICI LE CODE POUR FAIRE CHANGER LE RELAIS VERS LA CONSOLE!!!
-                ///////////////////////////////////////////////////////////////////////
-                ///////////////////////////////////////////////////////////////////////
-
-                GPIO_pinWrite(My_GPIO_Handle,GPIO_PIN5,0);
-
-
-                // le traitement se fera pour le mode synchrone
-                testsynchrone = 1;
-
-                // enleve le mode accord car synchrone = seulement singulieres
-                modeaccords = 0;
-
-                // pour activer la fen hamming... (voir interrupt)
-                IsSound = 1;
-
-                // reinitialise le metronome
-                compteurTemps = 0;
-                compteurNBfois = 0;
-                compteurNBsinus = 0;
-                compteurpulsation = 0;
-
-
-                // message indiquant de demarrer:
-                SPI_Write(0X0064);      // d
-                SPI_Write(0X0065);      // e
-                SPI_Write(0X0062);      // b
-                SPI_Write(0X0075);      // u
-                SPI_Write(0X0074);      // t
-                SPI_Write(0X0065);      // e
-                SPI_Write(0X0072);      // r
-
-                SPI_Write(0X0020);      // espace
-
-                SPI_Write(0X003A);      // :
-
-                SPI_Write(0X0020);      // espace
-
-                SPI_Write(0X0064);      // d
-
-                SPI_Write(0X000A);      // new line
-                SPI_Write(0X000D);      // cr
-
-                SPI_Write(0X0071);      // q
-                SPI_Write(0X0075);      // u
-                SPI_Write(0X0069);      // i
-                SPI_Write(0X0074);      // t
-                SPI_Write(0X0074);      // t
-                SPI_Write(0X0065);      // e
-                SPI_Write(0X0072);      // r
-
-                SPI_Write(0X0020);      // espace
-
-                SPI_Write(0X003A);      // :
-
-                SPI_Write(0X0020);      // espace
-
-                SPI_Write(0X0071);      // q
-
-                SPI_Write(0X000A);      // new line
-                SPI_Write(0X000D);      // cr
-                SPI_Write(0X000A);      // new line
-                SPI_Write(0X000D);      // cr
-
-            }
-
-            // depart du traitement en mode synchrone si on pese sur enter sur le clavier
-            if(ReadValue == 0x0064 && testsynchrone) // 0x0064 -> d
-            {
-                // en attente de la touche enter
-                start_acq = 1;
-
-                output_sample(0);
-            }
-
-            // changement de mode SYNCHRONE -> ASYNCHRONE
-            if(ReadValue == 0x0071 && testsynchrone) // 0x0071 -> q
-            {
-                // arrete le traitement
-                start_acq = 0;
-
-                // par defaut -> singulieres
-                modeaccords = 0;
-
-                ///////////////////////////////////////////////////////////////////////
-                ///////////////////////////////////////////////////////////////////////
-                // METTRE ICI LE CODE POUR FAIRE CHANGER LE RELAIS VERS LE PIC!!!
-                ///////////////////////////////////////////////////////////////////////
-                ///////////////////////////////////////////////////////////////////////
-
-                GPIO_pinWrite(My_GPIO_Handle,GPIO_PIN5,1);
-
-                // envoie un message au PIC pour lui dire de sortir de lidle
-                SPI_Write(0x0012);   // mettre le bon message
-
-                // le traitement se fera pour le mode synchrone
-                testsynchrone = 0;
-
-                // pour reinitialiser les enregistrement de trame en continu...
-                IsSound = 0;
-                TrameEnr = 0;
-
-                output_sample(0);
-
-                // debute le traitement
-                start_acq = 1;
-            }
-
-            // changement de mode SINGULIERE -> ACCORDS (POUR ASYNCHRONE SEULEMENT)
-            if(ReadValue == 0x007A && !testsynchrone) // ascii -> z
-            {
-                // arrete le traitement
-                start_acq = 0;
-
-                // pour faire le traitement dans le mode accords
-                modeaccords = 1;
-
-                // debute le traitement
-                start_acq = 1;
-            }
-
-            // changement de mode ACCORDS -> SINGULIERE (POUR ASYNCHRONE SEULEMENT)
-            if(ReadValue == 0x0078 && !testsynchrone) // ascii -> x
-            {
-                // arrete le traitement
-                start_acq = 0;
-
-                // pour faire le traitement dans le mode accords
-                modeaccords = 0;
-
-                // debute le traitement
-                start_acq = 1;
-            }
+            RecepComm();
         }
     }
 }
@@ -884,6 +711,188 @@ void DO_TRAITEMENT_SYNCHRONE()
         SPI_Write(0X000D);      // cr
         SPI_Write(0X000A);      // new line
         SPI_Write(0X000D);      // cr
+    }
+}
+
+/********************************************************************************************
+Description : reception de la communication
+********************************************************************************************/
+void RecepComm()
+{
+    // traite ici quoi faire avec la donnée lue sur le port série
+
+    NewValue = 0;
+
+    // augmentation de la valeur du metronome (120 BPM MAX)
+    if(ReadValue == 0x0077 && !testsynchrone)
+    {
+        BPM+=5;
+
+        if(BPM > 120)
+            BPM = 120;
+
+        metready = 0;
+
+        // initialisation des parametres du metronome
+        InitialiseMetronome(TabFreqMet, &Nbexecution, &NbTemps, (int)Lsinus, volumeMet, freqMet, TempsMet, BPM);
+        metready = 1;
+    }
+
+    // diminution de la valeur du metronome (80 BPM MIN)
+    if(ReadValue == 0x0073 && !testsynchrone)
+    {
+        BPM-=5;
+
+        if(BPM < 80)
+            BPM = 80;
+
+        metready = 0;
+
+        // initialisation des parametres du metronome
+        InitialiseMetronome(TabFreqMet, &Nbexecution, &NbTemps, (int)Lsinus, volumeMet, freqMet, TempsMet, BPM);
+        metready = 1;
+    }
+
+    // changement de mode ASYNCHRONE -> SYNCHRONE
+    if(ReadValue == 0x0061 && !testsynchrone)           // 0x0061 -> a
+    {
+        // en attente de la touche enter
+        start_acq = 0;
+
+        ///////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////
+        // METTRE ICI LE CODE POUR FAIRE CHANGER LE RELAIS VERS LA CONSOLE!!!
+        ///////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////
+
+        GPIO_pinWrite(My_GPIO_Handle,GPIO_PIN5,0);
+
+
+        // le traitement se fera pour le mode synchrone
+        testsynchrone = 1;
+
+        // enleve le mode accord car synchrone = seulement singulieres
+        modeaccords = 0;
+
+        // pour activer la fen hamming... (voir interrupt)
+        IsSound = 1;
+
+        // reinitialise le metronome
+        compteurTemps = 0;
+        compteurNBfois = 0;
+        compteurNBsinus = 0;
+        compteurpulsation = 0;
+
+
+        // message indiquant de demarrer:
+        SPI_Write(0X0064);      // d
+        SPI_Write(0X0065);      // e
+        SPI_Write(0X0062);      // b
+        SPI_Write(0X0075);      // u
+        SPI_Write(0X0074);      // t
+        SPI_Write(0X0065);      // e
+        SPI_Write(0X0072);      // r
+
+        SPI_Write(0X0020);      // espace
+
+        SPI_Write(0X003A);      // :
+
+        SPI_Write(0X0020);      // espace
+
+        SPI_Write(0X0064);      // d
+
+        SPI_Write(0X000A);      // new line
+        SPI_Write(0X000D);      // cr
+
+        SPI_Write(0X0071);      // q
+        SPI_Write(0X0075);      // u
+        SPI_Write(0X0069);      // i
+        SPI_Write(0X0074);      // t
+        SPI_Write(0X0074);      // t
+        SPI_Write(0X0065);      // e
+        SPI_Write(0X0072);      // r
+
+        SPI_Write(0X0020);      // espace
+
+        SPI_Write(0X003A);      // :
+
+        SPI_Write(0X0020);      // espace
+
+        SPI_Write(0X0071);      // q
+
+        SPI_Write(0X000A);      // new line
+        SPI_Write(0X000D);      // cr
+        SPI_Write(0X000A);      // new line
+        SPI_Write(0X000D);      // cr
+
+    }
+
+    // depart du traitement en mode synchrone si on pese sur enter sur le clavier
+    if(ReadValue == 0x0064 && testsynchrone) // 0x0064 -> d
+    {
+        // en attente de la touche enter
+        start_acq = 1;
+
+        output_sample(0);
+    }
+
+    // changement de mode SYNCHRONE -> ASYNCHRONE
+    if(ReadValue == 0x0071 && testsynchrone) // 0x0071 -> q
+    {
+        // arrete le traitement
+        start_acq = 0;
+
+        // par defaut -> singulieres
+        modeaccords = 0;
+
+        ///////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////
+        // METTRE ICI LE CODE POUR FAIRE CHANGER LE RELAIS VERS LE PIC!!!
+        ///////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////
+
+        GPIO_pinWrite(My_GPIO_Handle,GPIO_PIN5,1);
+
+        // envoie un message au PIC pour lui dire de sortir de lidle
+        SPI_Write(0x00FF);   // mettre le bon message
+
+        // le traitement se fera pour le mode synchrone
+        testsynchrone = 0;
+
+        // pour reinitialiser les enregistrement de trame en continu...
+        IsSound = 0;
+        TrameEnr = 0;
+
+        output_sample(0);
+
+        // debute le traitement
+        start_acq = 1;
+    }
+
+    // changement de mode SINGULIERE -> ACCORDS (POUR ASYNCHRONE SEULEMENT)
+    if(ReadValue == 0x007A && !testsynchrone) // ascii -> z
+    {
+        // arrete le traitement
+        start_acq = 0;
+
+        // pour faire le traitement dans le mode accords
+        modeaccords = 1;
+
+        // debute le traitement
+        start_acq = 1;
+    }
+
+    // changement de mode ACCORDS -> SINGULIERE (POUR ASYNCHRONE SEULEMENT)
+    if(ReadValue == 0x0078 && !testsynchrone) // ascii -> x
+    {
+        // arrete le traitement
+        start_acq = 0;
+
+        // pour faire le traitement dans le mode accords
+        modeaccords = 0;
+
+        // debute le traitement
+        start_acq = 1;
     }
 }
 
