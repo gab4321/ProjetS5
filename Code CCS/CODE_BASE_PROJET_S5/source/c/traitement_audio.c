@@ -206,7 +206,6 @@ int TestPeriodicite(int *VectRep, int *VectRep2, int *TabPeaks, int *TabPeaks2, 
             detect = 0;
     }
 
-    /*
     if(detect == 1)
     {
         //printf("signal periodique \n"); //a remplacer par des lumieres
@@ -219,12 +218,8 @@ int TestPeriodicite(int *VectRep, int *VectRep2, int *TabPeaks, int *TabPeaks2, 
         *CPLD_USER_REG &=~0x02;      //éteindre led1
         *CPLD_USER_REG |=0x04;      //allumer led2
     }
-<<<<<<< HEAD
 
     return detect;
-=======
-    */
->>>>>>> origin/Code-Test-CCS
 }
 
 /********************************************************************************************
@@ -588,7 +583,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*Do_dies-erreur3 && freq3 < 4*Do_dies+erreur3) || (freq4 > 4*Do_dies-erreur3 && freq4 < 4*Do_dies+erreur3) || (freq2 > 2*Do_dies-erreur2 && freq2 < 2*Do_dies+erreur2))
             {
-               // printf("note: Do dies\n ");
+                //printf("note: Do dies\n ");
                 //Buff_Do_dies++;
                 notes = 2;
             }
@@ -700,7 +695,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*La-erreur3 && freq3 < 4*La+erreur3) || (freq4 > 4*La-erreur3 && freq4 < 4*La+erreur3) || (freq2 > 2*La-erreur2 && freq2 < 2*La+erreur2))
             {
-               //printf("note: La\n ");
+                //printf("note: La\n ");
                // Buff_La++;
                 notes = 10;
             }
@@ -939,11 +934,7 @@ void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
         // ON VOIT UNE NOUVELLE NOTE -> on dit que cesxt une croche des le depart, on update par la suite
         else if(buffernote[ii] != -1)
         {
-<<<<<<< HEAD
             if(bufferintensite[ii] > 70) // trouver un seuil interessant
-=======
-            if(bufferintensite[ii] > 20) // trouver un seuil interessant
->>>>>>> origin/Code-Test-CCS
             {
                 notetemp = buffernote[ii];
                 indtemp = ii;

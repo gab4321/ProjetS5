@@ -41,35 +41,17 @@ extern void vectors();
 void SetupALL();
 void FonctionTEST();
 void printpartitionTest();
-<<<<<<< HEAD
 void DO_TRAITEMENT_ASYNCHRONE();
 void DO_TRAITEMENT_SYNCHRONE();
-=======
->>>>>>> origin/Code-Test-CCS
 
 /********************************************************************************************
 // VARIABLES GLOBALES
 ********************************************************************************************/
-<<<<<<< HEAD
 
 /********************************************************************************************/
 // variables si utilise le filtre FIR de LAPP 5
 const double PI =3.141592653589793;
 const int Fs = 8000;
-=======
-
-/********************************************************************************************/
-// variables si utilise le filtre FIR de LAPP 5
-const double PI =3.141592653589793;
-const int Fs = 8000;
-
-/********************************************************************************************/
-// variables si utilise le filtre FIR de LAPP 5
-#define TAMPON_L  64
-#pragma DATA_ALIGN(tampon, TAMPON_L*2); // Requis pour l'adressage circulaire en assembleur
-short tampon[TAMPON_L]={0}; 		// Tampon d'échantillons
-short *pTampon=&tampon[TAMPON_L-1];	// Pointeur sur l'échantillon courant
->>>>>>> origin/Code-Test-CCS
 
 /********************************************************************************************/
 // Fréquence générée avec le GEL slider (POUR DEBUG)
@@ -83,10 +65,7 @@ int IsSound = 0;
 int TrameEnr = 0;
 int GainNum = 1;
 int SeuilSon = 2000;//2200
-<<<<<<< HEAD
 int Pretraitement = 1;
-=======
->>>>>>> origin/Code-Test-CCS
 
 /********************************************************************************************/
 // variables pour la correlation et lenregistrement dune trame audio
@@ -108,17 +87,12 @@ int VectCorr2[Ncorr];
 int ndecalage = (int)Ndecalage;
 int nrep = (int)Nrep;
 int npadd = (int)Npadd;
-<<<<<<< HEAD
 
 int VectRep1[Nrep]; // vecteur
 int VectRep2[Nrep]; // vecteur
 
 int VectPadder1[Npadd];
 int VectPadder2[Npadd];
-=======
-int VectRep[Nrep]; // vecteur de reponse corr
-int VectPadder[Npadd];
->>>>>>> origin/Code-Test-CCS
 
 /********************************************************************************************/
 // variables pour la FFT
@@ -142,18 +116,11 @@ int nVerif = (int)Nverif; //doit detecter n intervalles egales pour conclure que
 int TabPeak1[Nverif];
 int TabPeak2[Nverif];
 int FlagLed0 = 0;
-<<<<<<< HEAD
 int IsPeriodique = 0;
 
 /********************************************************************************************/
 // variables pour le metronome
 int BPM = 100;      //frequence du metronome
-=======
-
-/********************************************************************************************/
-// variables pour le metronome
-int BPM = 120;      //frequence du metronome
->>>>>>> origin/Code-Test-CCS
 int freqMet = 605; // frequence du son du metronome
 #define Lsinus 40     // longueur du vecteur pour contenir la frequence
 int TempsMet = 50;   // en millisecondes
@@ -177,26 +144,7 @@ int NbTemps = 0;        //temps en nombre de periode (1/Fs) avant le prochain co
 int metready = 0;
 
 /********************************************************************************************/
-<<<<<<< HEAD
 // variables pour le mode synchrone
-=======
-// buffer nombre de detection pour test de la detection des notes singulieres
-int Buff_Do = 0;
-int Buff_Do_dies = 0;
-int Buff_Re = 0;
-int Buff_Re_dies = 0;
-int Buff_Mi = 0;
-int Buff_Fa = 0;
-int Buff_Fa_dies = 0;
-int Buff_Sol = 0;
-int Buff_Sol_dies = 0;
-int Buff_La = 0;
-int Buff_La_dies = 0;
-int Buff_Si = 0;
-
-/********************************************************************************************/
-// variables pour le test initial du mode synchrone
->>>>>>> origin/Code-Test-CCS
 #define Nbnotes 4
 
 int Buff_Notes_Mesure[Nbnotes] = {0};
@@ -226,7 +174,6 @@ int notetemp = -1;
 int amptemp = 0;
 int indtemp = 0;
 int Buff_timing[32] = {0};
-<<<<<<< HEAD
 int comp4mesure = 0;
 
 /********************************************************************************************/
@@ -244,13 +191,6 @@ int NoteLCD;
 int FLAGPASNOTE = 0;
 int FLAGNOTE = 0;
 int CompPasNote = 0;
-=======
-
-/********************************************************************************************/
-// variables de choix de modes
-int testsynchrone = 1;
-int modeaccords = 0;
->>>>>>> origin/Code-Test-CCS
 
 /********************************************************************************************/
 // variables pour faire des tests (UTILISÉE POUR DEBUG)
@@ -264,13 +204,10 @@ int Buff_int_test[32] = {5,2,5,2,1,1,5,2,5,2,1,1,5,2,5,2,1,1,5,2,5,2,1,1,5,2,5,2
 int Buff_note_test[32] = {8,8,8,8,8,8,3,3,4,4,4,4,2,2,6,6,6,6,6,6,8,8,8,8,8,8,8,8,8,8,9,9};
 int z;
 
-<<<<<<< HEAD
 /********************************************************************************************/
 // variables pour GPIOS
 extern GPIO_Handle My_GPIO_Handle;
 
-=======
->>>>>>> origin/Code-Test-CCS
 /********************************************************************************************
 Description : Fonction principale
 ********************************************************************************************/
@@ -327,33 +264,13 @@ int main()
             ReadValue = SPI_Read();
             flag_SPI = 0;
 
-<<<<<<< HEAD
             // flag pour lutilisation de la donnee lue dans le main...
             NewValue = 1;
         }
-=======
-        //FonctionTEST();
-
-        // fonction de traitement du timing
-        traitementtiming(Buff_int_test, Buff_note_test, Buff_timing);
-
-        // pour affichage
-        for(z = 0; z < 32; z++)
-        {
-            Buff_note[z] = Buff_note_test[z];
-        }
-
-        // fonction du template daffichage en prinf pour linstant
-        printpartitionTest();
-
-        // line bidon
-        desactiveINT = 0;
->>>>>>> origin/Code-Test-CCS
 
         /********************************************************************************************/
         // test de lintensité du son entrant pour faire traitement ou non (POUR ASYNCHRONE)
         /********************************************************************************************/
-<<<<<<< HEAD
         if(IsSound == 0 && TrameEnr == 1 && !testsynchrone)
         {
             TestIntensite(TestAmp, ntestson);
@@ -396,31 +313,6 @@ int main()
 
             // augmentation de la valeur du metronome (120 BPM MAX)
             if(ReadValue == 0x0077 && !testsynchrone)
-=======
-        //BOUCLE PRINCIPALE
-        /********************************************************************************************/
-        while(1)
-        {
-            /********************************************************************************************/
-            // test pour commencer la sequence dacquisition
-            if(testsynchrone == 1 && start_acq == 0)
-            {
-                printf("appuyez sur enter pour commencer\n");
-                while(clavier != 1)
-                {
-                    scanf("%i",&clavier);
-                }
-
-                if(clavier == 1)
-                {
-                    start_acq = 1;
-                    IsSound = 1;
-                    output_sample(0);
-                    clavier = 0;
-                }
-            }
-            else
->>>>>>> origin/Code-Test-CCS
             {
                 BPM+=5;
 
@@ -434,14 +326,8 @@ int main()
                 metready = 1;
             }
 
-<<<<<<< HEAD
             // diminution de la valeur du metronome (80 BPM MIN)
             if(ReadValue == 0x0073 && !testsynchrone)
-=======
-            /********************************************************************************************/
-            // test de lintensité du son entrant pour faire traitement ou non (POUR ASYNCHRONE)
-            if(IsSound == 0 && TrameEnr == 1 && !testsynchrone)
->>>>>>> origin/Code-Test-CCS
             {
                 BPM-=5;
 
@@ -455,14 +341,8 @@ int main()
                 metready = 1;
             }
 
-<<<<<<< HEAD
             // changement de mode ASYNCHRONE -> SYNCHRONE
             if(ReadValue == 0x0061 && !testsynchrone)           // 0x0061 -> a
-=======
-            /********************************************************************************************/
-            // traitement audio + detection des notes et accords (POUR ASYNCHRONE)
-            if(IsSound == 1 && TrameEnr == 1 && !testsynchrone)
->>>>>>> origin/Code-Test-CCS
             {
                 // en attente de la touche enter
                 start_acq = 0;
@@ -492,7 +372,6 @@ int main()
                 compteurpulsation = 0;
 
 
-<<<<<<< HEAD
                 // message indiquant de demarrer:
                 SPI_Write(0X0064);      // d
                 SPI_Write(0X0065);      // e
@@ -503,13 +382,6 @@ int main()
                 SPI_Write(0X0072);      // r
 
                 SPI_Write(0X0020);      // espace
-=======
-                // analyse de la FFT pour notes singulieres -> A PERFECTIONNER
-                //Note_actu = AnalyseFFT_Singuliere(Sortie_FFT);
-
-                // analyse de la FFT pour accords -> A PERFECTIONNER
-                AnalyseFFT_Accord(Sortie_FFT);
->>>>>>> origin/Code-Test-CCS
 
                 SPI_Write(0X003A);      // :
 
@@ -520,7 +392,6 @@ int main()
                 SPI_Write(0X000A);      // new line
                 SPI_Write(0X000D);      // cr
 
-<<<<<<< HEAD
                 SPI_Write(0X0071);      // q
                 SPI_Write(0X0075);      // u
                 SPI_Write(0X0069);      // i
@@ -528,14 +399,6 @@ int main()
                 SPI_Write(0X0074);      // t
                 SPI_Write(0X0065);      // e
                 SPI_Write(0X0072);      // r
-=======
-            /********************************************************************************************/
-            // traitement audio + detection des notes sdingulieres (POUR MODE ASYNCHRONE)
-            if(start_acq && acq_fini && testsynchrone)
-            {
-                // desactive le flag dacquisition
-                acq_fini  = 0;
->>>>>>> origin/Code-Test-CCS
 
                 SPI_Write(0X0020);      // espace
 
@@ -576,19 +439,11 @@ int main()
                 ///////////////////////////////////////////////////////////////////////
                 ///////////////////////////////////////////////////////////////////////
 
-<<<<<<< HEAD
                 GPIO_pinWrite(My_GPIO_Handle,GPIO_PIN5,1);
-=======
-                // enregistrement de lintensité
-                Buff_int[ii] = Intensite_actu;
-                // enregistrement de la note detecté
-                Buff_note[ii] = Note_actu;
->>>>>>> origin/Code-Test-CCS
 
                 // envoie un message au PIC pour lui dire de sortir de lidle
                 SPI_Write(0x0012);   // mettre le bon message
 
-<<<<<<< HEAD
                 // le traitement se fera pour le mode synchrone
                 testsynchrone = 0;
 
@@ -626,43 +481,6 @@ int main()
 
                 // debute le traitement
                 start_acq = 1;
-=======
-                if(ii >= 32)
-                {
-                    start_acq = 0;
-                    ii = 0;
-                    compteurTemps = 0;
-                    compteurNBfois = 0;
-                    compteurNBsinus = 0;
-                    compteurpulsation = 0;
-                    traiteaffichage = 1;
-                }
-
-                //desactiveINT = 1;
-
-                // Wait pour test (A ENLEVER )
-                //DSK6713_waitusec(0);
-            }
-
-            /********************************************************************************************/
-            // test de detection du temps des notes avec les notes / amplitudes
-            if(traiteaffichage && testsynchrone)
-            {
-
-                traitementtiming(Buff_int, Buff_note, Buff_timing);
-                traiteaffichage = 0;
-                timingdetecte = 1;
-            }
-
-            /********************************************************************************************/
-            // affichage des mesures a la console
-            if(timingdetecte && testsynchrone)
-            {
-                // METTRE ICI FONCTION DAFFICHAGE A LA CONSOLE !!!!
-
-                printpartitionTest(); // fonction test avec printf qui affiche 4 mesures
-                timingdetecte = 0;
->>>>>>> origin/Code-Test-CCS
             }
         }
     }
@@ -715,11 +533,7 @@ interrupt void c_int11()
 
         /********************************************************************************************/
         // APPLICATION DUNE FENETRE (POUR LINSTANT -> HAMMING VA TRES BIEN)
-<<<<<<< HEAD
         if(fenetre_actif && start_acq && IsSound == 1 && Pretraitement == 1)
-=======
-        if(fenetre_actif && start_acq && IsSound == 1 )
->>>>>>> origin/Code-Test-CCS
         {
                 x = x*FenHamming[nbEchADC];
         }
@@ -727,11 +541,7 @@ interrupt void c_int11()
 
         /********************************************************************************************/
         // FILTRAGE IIR BIQUAD
-<<<<<<< HEAD
         if(FLT_IIR && start_acq && Pretraitement == 1)
-=======
-        if(FLT_IIR && start_acq)
->>>>>>> origin/Code-Test-CCS
         {
             // FILTRAGE OCTAVE 4 et 5 (EN CE MOMENT)
             y1 = filtrerCascadeIIR(2, x); //passe haut IIR
@@ -1119,220 +929,6 @@ Description : fait un printf dune partition de 4 mesures (POUR FAIRE DES TESTS P
 void printpartitionTest()
 {
     int i = 0;
-
-    printf("XX|----------------|----------------|----------------|----------------|\n");
-    printf("XX|                |                |                |                |\n");
-
-    // ecrire la ligne de la note SI
-    printf("SI|");
-    for(i = 0; i < 32; i++)
-    {
-        if(Buff_timing[i] == 1 && Buff_note[i] == 12) // croche
-            printf("c-");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 12) // noire
-            printf("n-");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 12) // blanche
-            printf("b-");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 12) // ronde
-            printf("r-");
-        // autre
-        else
-            printf("--"); // aucune note
-
-        if((i+1)%8 == 0 && i != 0)
-            printf("|"); // fin dune mesure
-    }
-    printf("\n");
-
-    // ecrire la ligne de la note LA ou LA #
-    printf("LA|");
-    for(i = 0; i < 32; i++)
-    {
-        // LA #
-        if(Buff_timing[i] == 1 && Buff_note[i] == 11) // croche
-            printf("c#");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 11) // noire
-            printf("n#");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 11) // blanche
-            printf("b#");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 11) // ronde
-            printf("r#");
-
-        // LA
-        else if(Buff_timing[i] == 1 && Buff_note[i] == 10) // croche
-            printf("c-");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 10) // noire
-            printf("n-");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 10) // blanche
-            printf("b-");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 10) // ronde
-            printf("r-");
-        // autre
-        else
-            printf("  "); // aucune note
-
-        if((i+1)%8 == 0 && i != 0)
-            printf("|"); // fin dune mesure
-    }
-    printf("\n");
-
-    // ecrire la ligne de la note SOL ou SOL #
-    printf("SO|");
-    for(i = 0; i < 32; i++)
-    {
-        // SOL #
-        if(Buff_timing[i] == 1 && Buff_note[i] == 9) // croche
-            printf("c#");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 9) // noire
-            printf("n#");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 9) // blanche
-            printf("b#");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 9) // ronde
-            printf("r#");
-
-        // SOL
-        else if(Buff_timing[i] == 1 && Buff_note[i] == 8) // croche
-            printf("c-");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 8) // noire
-            printf("n-");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 8) // blanche
-            printf("b-");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 8) // ronde
-            printf("r-");
-        // autre
-        else
-            printf("--"); // aucune note
-
-        if((i+1)%8 == 0 && i != 0)
-            printf("|"); // fin dune mesure
-    }
-    printf("\n");
-
-    // ecrire la ligne de la note FA ou FA #
-    printf("FA|");
-    for(i = 0; i < 32; i++)
-    {
-        // FA #
-        if(Buff_timing[i] == 1 && Buff_note[i] == 7) // croche
-            printf("c#");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 7) // noire
-            printf("n#");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 7) // blanche
-            printf("b#");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 7) // ronde
-            printf("r#");
-
-        // FA
-        else if(Buff_timing[i] == 1 && Buff_note[i] == 6) // croche
-            printf("c-");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 6) // noire
-            printf("n-");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 6) // blanche
-            printf("b-");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 6) // ronde
-            printf("r-");
-        // autre
-        else
-            printf("  "); // aucune note
-
-        if((i+1)%8 == 0 && i != 0)
-            printf("|"); // fin dune mesure
-    }
-    printf("\n");
-
-    // ecrire la ligne de la note MI
-    printf("MI|");
-    for(i = 0; i < 32; i++)
-    {
-        if(Buff_timing[i] == 1 && Buff_note[i] == 5) // croche
-            printf("c-");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 5) // noire
-            printf("n-");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 5) // blanche
-            printf("b-");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 5) // ronde
-            printf("r-");
-        // autre
-        else
-            printf("--"); // aucune note
-
-        if((i+1)%8 == 0 && i != 0)
-            printf("|"); // fin dune mesure
-    }
-    printf("\n");
-
-    // ecrire la ligne de la note RE ou RE #
-    printf("RE|");
-    for(i = 0; i < 32; i++)
-    {
-        // RE #
-        if(Buff_timing[i] == 1 && Buff_note[i] == 4) // croche
-            printf("c#");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 4) // noire
-            printf("n#");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 4) // blanche
-            printf("b#");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 4) // ronde
-            printf("r#");
-
-        // RE
-        else if(Buff_timing[i] == 1 && Buff_note[i] == 3) // croche
-            printf("c-");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 3) // noire
-            printf("n-");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 3) // blanche
-            printf("b-");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 3) // ronde
-            printf("r-");
-        // autre
-        else
-            printf("  "); // aucune note
-
-        if((i+1)%8 == 0 && i != 0)
-            printf("|"); // fin dune mesure
-    }
-    printf("\n");
-
-    // ecrire la ligne de la note DO ou DO #
-    printf("DO|");
-    for(i = 0; i < 32; i++)
-    {
-        // DO #
-        if(Buff_timing[i] == 1 && Buff_note[i] == 2) // croche
-            printf("c#");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 2) // noire
-            printf("n#");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 2) // blanche
-            printf("b#");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 2) // ronde
-            printf("r#");
-
-        // DO
-        else if(Buff_timing[i] == 1 && Buff_note[i] == 1) // croche
-            printf("c-");
-        else if(Buff_timing[i] == 2 && Buff_note[i] == 1) // noire
-            printf("n-");
-        else if(Buff_timing[i] == 3 && Buff_note[i] == 1) // blanche
-            printf("b-");
-        else if(Buff_timing[i] == 4 && Buff_note[i] == 1) // ronde
-            printf("r-");
-        // autre
-        else
-            printf("--"); // aucune note
-
-        if((i+1)%8 == 0 && i != 0)
-            printf("|"); // fin dune mesure
-    }
-    printf("\n");
-}
-
-/********************************************************************************************
-Description : fait un printf dune partition de 4 mesures (POUR FAIRE DES TESTS PAS BON POUR TEMPS REEL)
-********************************************************************************************/
-void printpartitionTest()
-{
-    int i = 0;
-
 
     printf("XX|----------------|----------------|----------------|----------------|\n");
     printf("XX|                |                |                |                |\n");
