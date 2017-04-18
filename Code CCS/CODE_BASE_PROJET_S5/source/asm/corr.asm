@@ -6,6 +6,16 @@
 _CorrASM
 	.asmfunc
 
+		; Mémoriser le contenu de AMR
+	MVC	AMR, B5
+	STW	B5,*--B15
+	STW A10,*--B15
+	STW A11,*--B15
+	STW A12,*--B15
+	STW A13,*--B15
+	STW A14,*--B15
+
+
 	;adresse memoire du vecteur dentree et de sortie
 	;A FAIRE: REMPLACER PAR LADRESSE DUN ESPACES DE LA RAM DEFINI ET MEME CHOSE POUR VECTEUR DE SORTIE
 	MV A4, A14 			;met A4 dans A8 pour utiliser A4 dans la multiplication
@@ -76,6 +86,16 @@ BOUCLESOMME:
 	[A1] B BOUCLECORR
 	NOP 5
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	 ;Rétablir le contenu de AMR
+	LDW *B15++,A14
+	LDW *B15++,A13
+	LDW *B15++,A12
+	LDW *B15++,A11
+	LDW *B15++,A10
+	LDW	*B15++,B5
+	NOP	5
+	MVC	B5,AMR
 
 	B B3
 	NOP 5

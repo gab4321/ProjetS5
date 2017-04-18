@@ -4,6 +4,12 @@ _IIR_2ndOrder_directII_ASM:
 	; Mémoriser le contenu de AMR
 	MVC	AMR, B5
 	STW	B5,*--B15
+	STW A10,*--B15
+	STW A11,*--B15
+	STW A12,*--B15
+	STW B10,*--B15
+	STW B11,*--B15
+	STW B12,*--B15
 
 	; enregistrement parametres de la fonction
 	MV A4, B7	;x(n)
@@ -164,6 +170,12 @@ _IIR_2ndOrder_directII_ASM:
 	MV A10,A4
 
 	; Rétablir le contenu de AMR
+	LDW *B15++,B12
+	LDW *B15++,B11
+	LDW *B15++,B10
+	LDW *B15++,A12
+	LDW *B15++,A11
+	LDW *B15++,A10
 	LDW	*B15++,B5
 	NOP	5
 	MVC	B5,AMR

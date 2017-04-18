@@ -32,6 +32,16 @@ source/c/MAIN.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_mcbsphal.h
 source/c/MAIN.obj: C:/ti/dsk6713/include/dsk6713.h
 source/c/MAIN.obj: C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/filtrerCascadeIIR.h
 source/c/MAIN.obj: C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/traitement_audio.h
+source/c/MAIN.obj: C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/SPI_driver.h
+source/c/MAIN.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdio.h
+source/c/MAIN.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stddef.h
+source/c/MAIN.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdbool.h
+source/c/MAIN.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/yvals.h
+source/c/MAIN.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdarg.h
+source/c/MAIN.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/_lock.h
+source/c/MAIN.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpio.h
+source/c/MAIN.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpiohal.h
+source/c/MAIN.obj: C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/Communication_232.h
 
 ../source/c/MAIN.c: 
 C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdio.h: 
@@ -65,3 +75,13 @@ C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_mcbsphal.h:
 C:/ti/dsk6713/include/dsk6713.h: 
 C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/filtrerCascadeIIR.h: 
 C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/traitement_audio.h: 
+C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/SPI_driver.h: 
+C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdio.h: 
+C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stddef.h: 
+C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdbool.h: 
+C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/yvals.h: 
+C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdarg.h: 
+C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/_lock.h: 
+C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpio.h: 
+C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpiohal.h: 
+C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/Communication_232.h: 

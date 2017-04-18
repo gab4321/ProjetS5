@@ -7,6 +7,7 @@ SHELL = cmd.exe
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../source/c/C6713Helper_UdeS.c \
+../source/c/Communication_232.c \
 ../source/c/MAIN.c \
 ../source/c/SPI_driver.c \
 ../source/c/bitrev_index.c \
@@ -16,6 +17,7 @@ C_SRCS += \
 
 C_DEPS += \
 ./source/c/C6713Helper_UdeS.d \
+./source/c/Communication_232.d \
 ./source/c/MAIN.d \
 ./source/c/SPI_driver.d \
 ./source/c/bitrev_index.d \
@@ -25,6 +27,7 @@ C_DEPS += \
 
 OBJS += \
 ./source/c/C6713Helper_UdeS.obj \
+./source/c/Communication_232.obj \
 ./source/c/MAIN.obj \
 ./source/c/SPI_driver.obj \
 ./source/c/bitrev_index.obj \
@@ -34,6 +37,7 @@ OBJS += \
 
 OBJS__QUOTED += \
 "source\c\C6713Helper_UdeS.obj" \
+"source\c\Communication_232.obj" \
 "source\c\MAIN.obj" \
 "source\c\SPI_driver.obj" \
 "source\c\bitrev_index.obj" \
@@ -43,6 +47,7 @@ OBJS__QUOTED += \
 
 C_DEPS__QUOTED += \
 "source\c\C6713Helper_UdeS.d" \
+"source\c\Communication_232.d" \
 "source\c\MAIN.d" \
 "source\c\SPI_driver.d" \
 "source\c\bitrev_index.d" \
@@ -52,6 +57,7 @@ C_DEPS__QUOTED += \
 
 C_SRCS__QUOTED += \
 "../source/c/C6713Helper_UdeS.c" \
+"../source/c/Communication_232.c" \
 "../source/c/MAIN.c" \
 "../source/c/SPI_driver.c" \
 "../source/c/bitrev_index.c" \

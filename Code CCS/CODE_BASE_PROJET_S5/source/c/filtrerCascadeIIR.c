@@ -61,10 +61,13 @@ short filtrerCascadeIIR(int noCorde, short x)
 
             // filtrage par le IIR biquad de structure direct II
             ligne = IIR_NO_LIGNE[noCorde-1]+n;
-            y = IIR_2ndOrder_directII_ASM(y, &IIR_W2[n][0], &IIR_COEFFS[ligne][0]);
-            // NOTES: si en cours de route passe de singuliere a accord -> doit resetter les IIR_W1 et IIR_W2
+            y = IIR_2ndOrder_directII_ASM(y, &IIR_W1[n][0], &IIR_COEFFS[ligne][0]);
         }
     }
+	else
+	{
+
+	}
 
 	// Appliquer le gain global
 	y = IIR_GAINS[noCorde-1]*y;

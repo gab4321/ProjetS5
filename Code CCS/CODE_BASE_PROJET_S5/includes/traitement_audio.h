@@ -19,7 +19,7 @@ void CorrManip(int *VectCorr, int *VectPadder);
 void TestIntensite(int *TestAmp, int ntestson);
 
 // fonction qui test la periodicite dun vecteur de sortie de lautocorrelation
-void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep);
+int TestPeriodicite(int *VectRep, int *VectRep2, int *TabPeaks, int *TabPeaks2, int nrep);
 
 // fonction qui effectue la FFT de la trame
 void calculFFT(float *TableInputPadder, float *Sortie_FFT,float *w, short *index);
@@ -37,7 +37,7 @@ void ApplicationFentre(float *Fenetre, float *TableFFT);
 int AnalyseFFT_Singuliere(float *Sortie_FFT);
 
 // fonction qui analyse la FFT
-void AnalyseFFT_Accord(float *Sortie_FFT);
+int AnalyseFFT_Accord(float *Sortie_FFT);
 
 // fonction qui genere le son de metronome a une frequence désirée (BPM)
 short GenererMetronome(short table[], int nbexecution, int nbcompteur, int nbValSinus, int *compteurTemps, int *compteurNbFois, int *compteurSinus, int *compteurmesure);
@@ -53,5 +53,8 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
 
 // donne la moyenne damplitude de la trame mode synchrone
 int intensitesynchrone(int *Vectacq);
+
+// traite les info recolté et donne le timing de la note dans un vecteur
+void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming);
 
 #endif

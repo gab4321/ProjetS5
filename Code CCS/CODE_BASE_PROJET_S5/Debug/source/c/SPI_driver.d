@@ -12,12 +12,14 @@ source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_chip.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_irq.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_irqhal.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_mcbsphal.h
-source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpio.h
-source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpiohal.h
-source/c/SPI_driver.obj: C:/ti/dsk6713/include/dsk6713.h
+source/c/SPI_driver.obj: C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/C6713Helper_UdeS.h
+source/c/SPI_driver.obj: C:/ti/dsk6713/include/dsk6713_aic23.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_timer.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_timerhal.h
+source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpio.h
+source/c/SPI_driver.obj: C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpiohal.h
+source/c/SPI_driver.obj: C:/ti/dsk6713/include/dsk6713.h
 source/c/SPI_driver.obj: C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/SPI_driver.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdio.h
 source/c/SPI_driver.obj: C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/linkage.h
@@ -40,12 +42,14 @@ C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_chip.h:
 C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_irq.h: 
 C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_irqhal.h: 
 C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_mcbsphal.h: 
-C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpio.h: 
-C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpiohal.h: 
-C:/ti/dsk6713/include/dsk6713.h: 
+C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/C6713Helper_UdeS.h: 
+C:/ti/dsk6713/include/dsk6713_aic23.h: 
 C:/ti/ccsv7/ccs_base/C6xCSL/include/csl.h: 
 C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_timer.h: 
 C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_timerhal.h: 
+C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpio.h: 
+C:/ti/ccsv7/ccs_base/C6xCSL/include/csl_gpiohal.h: 
+C:/ti/dsk6713/include/dsk6713.h: 
 C:/Users/Gab49/workspace_v7/CODE_BASE_PROJET_S5/includes/SPI_driver.h: 
 C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/stdio.h: 
 C:/ti/ccsv7/tools/compiler/c6000_7.4.20/include/linkage.h: 

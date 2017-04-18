@@ -27,6 +27,7 @@ extern const int Fs;
 // variables du main pour la correlation
 extern int ndecalage;
 extern int ntrame;
+extern int ncorr;
 extern int npadd;
 
 // variable du main pour la detection de periodicité
@@ -40,7 +41,6 @@ extern int IsSound;
 
 // variables du main pour la FFT
 extern short index[];
-
 
 // define des frequences de notes
 #define Do 261.63
@@ -56,20 +56,6 @@ extern short index[];
 #define La_dies 466.16
 #define Si 493.88
 
-// variable de test de fiabilité de la détection des singulieres
-extern int Buff_Do;
-extern int Buff_Do_dies;
-extern int Buff_Re;
-extern int Buff_Re_dies;
-extern int Buff_Mi;
-extern int Buff_Fa;
-extern int Buff_Fa_dies;
-extern int Buff_Sol;
-extern int Buff_Sol_dies;
-extern int Buff_La;
-extern int Buff_La_dies;
-extern int Buff_Si;
-
 /********************************************************************************************
 fonction de preparation du vecteur de correlation
 ********************************************************************************************/
@@ -82,7 +68,7 @@ void CorrManip(int *VectCorr, int *VectPadder)
         VectPadder[i] = 0;
     }
 
-    for(i = 0; i<ntrame; i++)
+    for(i = 0; i<ncorr; i++)
     {
         VectPadder[i+ndecalage] = VectCorr[i];
     }
@@ -92,6 +78,10 @@ void CorrManip(int *VectCorr, int *VectPadder)
         VectPadder[i] = 0;
     }
 }
+
+/********************************************************************************************
+fonction qui fait la moyenne des intensité dune trame en mode synchrone
+********************************************************************************************/
 int intensitesynchrone(int *Vectacq)
 {
 
@@ -110,7 +100,6 @@ int intensitesynchrone(int *Vectacq)
     intensite = intensite/ntrame;
 
     return intensite;
-
 }
 
 /********************************************************************************************
@@ -137,6 +126,7 @@ void TestIntensite(int *TestAmp, int ntestson)
     }
     else
     {
+        /*
         // printf("pas de son\n");  //a remplacer par des lumieres
         if(FlagLed0==0)
         {
@@ -145,38 +135,44 @@ void TestIntensite(int *TestAmp, int ntestson)
             *CPLD_USER_REG |=0x01;      //allumer led0
             FlagLed0 =1;
         }
+        */
     }
 }
 
 /********************************************************************************************
 fonction qui test la periodicite dun vecteur de sortie de lautocorrelation
 ********************************************************************************************/
-void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep)
+int TestPeriodicite(int *VectRep, int *VectRep2, int *TabPeaks, int *TabPeaks2, int nrep)
 {
+
     int i;
     int maxcorr = 0;
+    int maxcorr2 =0;
     int npeaks = 0;
-    double interIni;
+    int npeaks2 = 0;
     int detect = 1;
-    double interK;
     double a;
 
     //detection de lamplitude maximale de la correlation
     for(i = 0; i < nrep; i++)
     {
-        if ( abs(VectRep[i]) > maxcorr )
-            maxcorr = abs(VectRep[i]);
+        if ( VectRep[i] > maxcorr )
+            maxcorr = VectRep[i];
+
+        if ( VectRep2[i] > maxcorr2 )
+            maxcorr2 = VectRep[i];
     }
 
     //scaling du maximum
     maxcorr = maxcorr * scale;
+    maxcorr2 = maxcorr2 * scale;
 
     //detection des indices i des peaks de la correlation
-    for(i = 2; i < nrep-2; i++)
+    for(i = 4; i < nrep-4; i++)
     {
-        if(VectRep[i] > VectRep[i-1] && VectRep[i] > VectRep[i-2])
+        if(VectRep[i] > VectRep[i-1] && VectRep[i] > VectRep[i-2] && VectRep[i] > VectRep[i-3] && VectRep[i] > VectRep[i-4])
         {
-            if(VectRep[i] > VectRep[i+1] && VectRep[i] > VectRep[i+2])
+            if(VectRep[i] > VectRep[i+1] && VectRep[i] > VectRep[i+2] && VectRep[i] > VectRep[i+3] && VectRep[i] > VectRep[i+4])
             {
                 if(VectRep[i] > maxcorr)
                 {
@@ -185,42 +181,45 @@ void TestPeriodicite(int *VectRep, int *TabPeaks, int nrep)
                 }
             }
         }
-    }
 
-    // code d'erreur si seulement un peak est trouvé (signal apériodique)
-    if(npeaks < 8)
-    {
-        detect = 0;
-    }
-
-    //detection des intervalles K entre les peaks
-    //(le nb de verifications necessaires est a valider min = 2)
-    interIni = (double)(TabPeaks[1] - TabPeaks[0]);
-    for(i = 1; i < nVerif; i++ )
-    {
-        interK = (double)(TabPeaks[i+1] - TabPeaks[i]);
-        a = ((interK-interIni)/interIni)*100.0;
-        if( a > 6) //si ecart relative sup a 5 %
+        if(VectRep2[i] > VectRep2[i-1] && VectRep2[i] > VectRep2[i-2] && VectRep2[i] > VectRep2[i-3] && VectRep2[i] > VectRep2[i-4])
         {
-            detect = 0;
-            break;
+            if(VectRep2[i] > VectRep2[i+1] && VectRep2[i] > VectRep2[i+2] && VectRep2[i] > VectRep2[i+3] && VectRep2[i] > VectRep2[i+4])
+            {
+                if(VectRep2[i] > maxcorr2)
+                {
+                    TabPeaks2[npeaks2] = i;
+                    npeaks2+=1;
+                }
+            }
         }
+    }
+
+    //Comparaison peak entre les 2 trames
+    if(npeaks != npeaks2)                           /// PAS SUR
+        detect = 0;
+
+    for(i = 0; i < npeaks; i++)
+    {
+        a = abs(TabPeaks[i] - TabPeaks2[i]);
+        if(a > 5)
+            detect = 0;
     }
 
     if(detect == 1)
     {
-        //printf("signal periodique\n "); //a remplacer par des lumieres
-        FlagLed0 = 0;
-        *CPLD_USER_REG &=~0x01;      //éteindre led0
+        //printf("signal periodique \n"); //a remplacer par des lumieres
+        *CPLD_USER_REG &=~0x04;      //éteindre led2
         *CPLD_USER_REG |=0x02;      //allumer led1
     }
     else
     {
         //printf("signal non periodique \n"); //a remplacer par des lumieres
-        FlagLed0 = 0;
-        *CPLD_USER_REG &=~0x01;      //éteindre led0
+        *CPLD_USER_REG &=~0x02;      //éteindre led1
         *CPLD_USER_REG |=0x04;      //allumer led2
     }
+
+    return detect;
 }
 
 /********************************************************************************************
@@ -304,7 +303,7 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
     float freq4 = 0;
 
     float erreur = 6; //erreur sur la frequence en Hz pour la fondamentale
-    float erreur2 = 12; //erreur sur la frequence en Hz pour la premiere harmonique
+    float erreur2 = 15; //erreur sur la frequence en Hz pour la premiere harmonique
     float erreur3 = 25;
 
     int MargeElim = 10;
@@ -337,10 +336,10 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
 
     if(max1 < 2*maxverif)
     {
-        //return -1;
+        // voir si on garde ou pas cette condition
+        // return -1;
     }
     /////////////////////////////////////////////////////////////////////////////////////////////
-
 
     // recherche la premiere harmonique (OCTAVE 5)
     for(i = 66; i <= 130 ; i++ )  // bornes selon trame de 1024 points a 8000 Khz
@@ -358,7 +357,7 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
         Sortie_FFT[i] = 0;
     }
 
-    ///////////////////// OCTAVE 6 -> CAS BIZARR ///////////////////
+    ///////////////////// OCTAVE 6  ///////////////////
     // recherche la troisieme harmonique (OCTAVE 6)
     for(i = 131; i <= 255 ; i++ )  // bornes selon trame de 1024 points a 8000 Khz
     {
@@ -375,6 +374,7 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
         Sortie_FFT[i] = 0;
     }
 
+    // recherche la quatrieme harmonique dans loctave 6 (SELON LA NOTE)
     for(i = 131; i <= 255 ; i++ )  // bornes selon trame de 1024 points a 8000 Khz
     {
         if(Sortie_FFT[i] > max4)
@@ -384,14 +384,10 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
         }
     }
 
-
-
-    ///////////////////// OCTAVE 6 -> CAS BIZARR ///////////////////
-
     // frequence de la fondamentale (OCTAVE 4)
     freq1 = (float)(ind1*(float)Fs/(float)ntrame);
 
-    // frequence de la premiere harmonique (OCTAVE 5)
+    // frequence de la premiere harmonique (OCTAVE 5) ->
     freq2 = (float)(ind2*(float)Fs/(float)ntrame);
 
     // frequence de la troisieme harmonique (OCTAVE 6) -> possible premier peak
@@ -401,18 +397,17 @@ int AnalyseFFT_Singuliere(float *Sortie_FFT)
     freq4 = (float)(ind4*(float)Fs/(float)ntrame);
 
 
-    // boucle de comparaison aux frequences singulieres (fondamentales et 1ere harmoniques)
+    // boucle de comparaison aux frequences singulieres
 
     note = TrouveNote_W_Harm(freq1, freq2, freq3, freq4, erreur, erreur2, erreur3);
 
     return note;
-
 }
 
 /********************************************************************************************
 Description : analyse le resultat de la FFT (POUR ACCORDS)
 ********************************************************************************************/
-void AnalyseFFT_Accord(float *Sortie_FFT)
+int AnalyseFFT_Accord(float *Sortie_FFT)
 {
     int ind1 = 0, ind2 = 0, ind3 = 0, i = 0;
     int max1 = 0, max2  = 0, max3 = 0;
@@ -492,7 +487,8 @@ void AnalyseFFT_Accord(float *Sortie_FFT)
         {
             if(note1 == 10 || note2 == 10 || note3 == 10)
             {
-                printf("Re mineur\n ");
+                //printf("Re mineur\n ");
+                return 1;
             }
         }
     }
@@ -504,7 +500,8 @@ void AnalyseFFT_Accord(float *Sortie_FFT)
         {
             if(note1 == 10 || note2 == 10 || note3 == 10)
             {
-                printf("Re majeur\n ");
+                //printf("Re majeur\n ");
+                return 2;
             }
         }
     }
@@ -516,7 +513,8 @@ void AnalyseFFT_Accord(float *Sortie_FFT)
         {
             if(note1 == 8 || note2 == 8 || note3 == 8)
             {
-                printf("C\n ");
+                //printf("C\n ");
+                return 3;
             }
         }
     }
@@ -528,10 +526,13 @@ void AnalyseFFT_Accord(float *Sortie_FFT)
         {
             if(note1 == 12 || note2 == 12 || note3 == 12)
             {
-                printf("Sol inv\n ");
+                //printf("Sol inv\n ");
+                return 4;
             }
         }
     }
+
+    return -1;
 
     /*
     if(note1 == -1 || note2 == -1 || note3 == -1)
@@ -568,7 +569,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
         //{
             if((freq3 > 4*Si-erreur3 && freq3 < 4*Si+erreur3) || (freq4 > 4*Si-erreur3 && freq4 < 4*Si+erreur3) || (freq2 > 2*Si-erreur2 && freq2 < 2*Si+erreur2))
             {
-               // printf("note: Si\n ");
+               //printf("note: Si\n ");
                 //Buff_Si++;
                 notes = 12;
             }
@@ -624,7 +625,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
        // {
             if((freq3 > 4*Mi-erreur3 && freq3 < 4*Mi+erreur3) || (freq4 > 4*Mi-erreur3 && freq4 < 4*Mi+erreur3) || (freq2 > 2*Mi-erreur2 && freq2 < 2*Mi+erreur2))
             {
-               // printf("note: Mi\n ");
+               //printf("note: Mi\n ");
                 //Buff_Mi++;
                 notes = 5;
             }
@@ -681,7 +682,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
             if((freq3 > 4*Sol_dies-erreur3 && freq3 < 4*Sol_dies+erreur3) || (freq4 > 4*Sol_dies-erreur3 && freq4 < 4*Sol_dies+erreur3) || (freq2 > 2*Sol_dies-erreur2 && freq2 < 2*Sol_dies+erreur2))
             {
                 //printf("note: Sol dies\n ");
-                //Buff_Sol_dies++;
+                ///Buff_Sol_dies++;
                 notes = 9;
             }
         //}
@@ -709,7 +710,7 @@ int TrouveNote_W_Harm(float freq1, float freq2, float freq3, float freq4, float 
             if((freq3 > 4*La_dies-erreur3 && freq3 < 4*La_dies+erreur3) || (freq4 > 4*La_dies-erreur3 && freq4 < 4*La_dies+erreur3) || (freq2 > 2*La_dies-erreur2 && freq2 < 2*La_dies+erreur2))
             {
                 //printf("note: La dies\n ");
-                //Buff_La_dies++;
+               //Buff_La_dies++;
                 notes = 11;
             }
         //}
@@ -812,6 +813,143 @@ int TrouveNote_WO_Harm(float freq, float erreur)
     }
 
     return -1;
+}
+
+/********************************************************************************************
+Description : donne un vecteur avec les timing associés a chaque detection de notes
+********************************************************************************************/
+void traitementtiming(int *bufferintensite, int *buffernote, int *buffertiming)
+{
+    // Indice du buffer timing:
+    // 1: croche
+    // 2: noire
+    // 3: blanche
+    // 4: ronde
+    // -1: rien (un silence ou la fin dune note: le chiffre est mis au commencement de la note on pad avec des -1 apres...)
+
+
+    // initialisation des parametres
+    static int ii = 0;
+    int compteurNoteAlike = 0;
+    int notetemp = -1;
+    int amptemp = 0;
+    int indtemp = 0;
+
+    for(ii = 0; ii < 32; ii++) // 32: le vecteur contient 4 mesures
+    {
+        // ON VOIT LA MEME NOTE EN PARCOURANT LE VECTEUR
+        if(buffernote[ii] == notetemp && notetemp != -1)
+        {
+
+            // on detecte la meme note pour la premiere fois
+            if(bufferintensite[ii] <  0.5*amptemp && compteurNoteAlike == 0) // difference assez grande pour dire que cest une noire et non une croche (A AJUSTER)
+            {
+                buffertiming[indtemp] = 2; // la note est une noire
+
+                //amptemp = Buff_amp[ii]; // voir si on garde cette ligne de code******
+
+                buffertiming[ii] = -1;
+
+                compteurNoteAlike++;
+
+            }
+
+            // on detecte la meme note une deuxieme fois et lamplitude est plus petite que la premiere amplitude enregistrée
+            // voir si cest mieux de comprarer a la derniere amplitude enregistré ou la premiere amplitude quand on detecte
+            // la note pour la premiere fois -> FAIRE ATTENTION AU SUBSTAIN!!!!!
+            // premiere condition remplie pour que ca soit une blanche
+            else if(compteurNoteAlike == 1 && bufferintensite[ii] < 0.5*amptemp)
+            {
+                //  a voir si on prend 3 ou 4 detections pour la blanche
+                //Buff_timing[indtemp] = 3; // la note est une blanche
+
+                buffertiming[ii] = -1;
+
+                compteurNoteAlike++;
+            }
+
+            // on detecte la meme note une troisieme fois et lamplitude est plus petite que la premiere amplitude enregistrée
+            // condition remplie pour que ca soit une blanche
+            else if(compteurNoteAlike == 2 && bufferintensite[ii] < 0.5*amptemp)
+            {
+                buffertiming[indtemp] = 3; // la note est une blanche
+
+                buffertiming[ii] = -1;
+
+                compteurNoteAlike++;
+            }
+
+            // on detecte la meme note une quatrieme fois et lamplitude est plus petite que la premiere amplitude enregistrée
+            // premiere condition remplie pour que ca soit une ronde
+            else if(compteurNoteAlike == 3 && bufferintensite[ii] < 0.5*amptemp)
+            {
+
+                buffertiming[ii] = -1;
+
+                compteurNoteAlike++;
+            }
+
+            // on detecte la meme note une cinquieme fois et lamplitude est plus petite que la premiere amplitude enregistrée
+            // condition remplie pour que ca soit une ronde
+            // ici on detecte 6 fois la meme note car trop de glitch pour detecter 8 fois la meme note...
+            // on saute donc au conclusions immédiatement
+            else if(compteurNoteAlike == 4 && bufferintensite[ii] < 0.5*amptemp)
+            {
+                buffertiming[indtemp] = 4; // la note est une ronde
+
+                buffertiming[ii] = -1;
+                buffertiming[ii+1] = -1;
+                buffertiming[ii+2] = -1;
+
+                ii+=2;
+                compteurNoteAlike = 0;
+            }
+
+
+            // detecte la meme note mais ne baisse pas assez damplitude (on detecte encore une attaque) -> cest une croche
+            else if(bufferintensite[ii] >  0.5*amptemp)
+            {
+
+                notetemp = buffernote[ii];
+                indtemp = ii;
+                amptemp = bufferintensite[ii];
+                compteurNoteAlike = 0;
+
+                buffertiming[indtemp] = 1; // la note est une croche
+
+            }
+        }
+
+        // ON VOIT UN SILENCE EN PARCOURANT LE VECTEUR
+        // NOTE: il faudrait mettre un seuillage pour le synchrone car des fausses detections occurent
+        else if(buffernote[ii] == -1)
+        {
+            notetemp = -1;
+            buffertiming[ii] = -1;
+
+            //indtemp = ii;
+
+        }
+
+        // ON VOIT UNE NOUVELLE NOTE -> on dit que cesxt une croche des le depart, on update par la suite
+        else if(buffernote[ii] != -1)
+        {
+            if(bufferintensite[ii] > 70) // trouver un seuil interessant
+            {
+                notetemp = buffernote[ii];
+                indtemp = ii;
+                amptemp = bufferintensite[ii];
+                compteurNoteAlike = 0;
+
+                buffertiming[indtemp] = 1; // la note est une croche
+            }
+            else
+            {
+                notetemp = -1;
+                buffertiming[ii] = -1;
+            }
+        }
+    }
 }
 
 /********************************************************************************************

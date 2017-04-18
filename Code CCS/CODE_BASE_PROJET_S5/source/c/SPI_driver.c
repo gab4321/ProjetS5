@@ -10,8 +10,8 @@
 ***************************************************************************/
 
 #include <csl_Mcbsp.h>
-//#include <C6713Helper_UdeS.h>
-//#include <dsk6713_aic23.h>
+#include <C6713Helper_UdeS.h>
+#include <dsk6713_aic23.h>
 #include <csl_gpio.h>
 #include <csl_irq.h>
 #include <dsk6713.h>
@@ -64,7 +64,7 @@ Uint32 Test_bidon;
 Uint32 Verif = 1;
 unsigned int Config_act = 0;
 unsigned int SPI_Config_Verif = 0;
-MCBSP_Handle DSK6713_AIC23_CONTROLHANDLE;
+extern MCBSP_Handle DSK6713_AIC23_CONTROLHANDLE;
 
 /****************************************************************************
 	Private functions :
@@ -80,7 +80,7 @@ MCBSP_Handle DSK6713_AIC23_CONTROLHANDLE;
 void SPI_init(void)
 {
     //handle du MCBSP0
-    DSK6713_AIC23_CONTROLHANDLE = MCBSP_open(MCBSP_DEV0, MCBSP_OPEN_RESET);
+    //DSK6713_AIC23_CONTROLHANDLE = MCBSP_open(MCBSP_DEV0, MCBSP_OPEN_RESET);
 
     //defini la configuration désirée (A REVOIR)
     MCBSP_Config MCBSP0_SPI_Cfg = {
@@ -201,15 +201,7 @@ void SPI_init(void)
 
 void SPI_Write(short SPI_data)
 {
-    /*
-    if(!is_comp)
-    {
-        //16 bit en 8 bit
-        SPI_data = SPI_data/256;
-    }
-    */
-
-     DSK6713_waitusec(100); // revoir si meilleure maniere de procéder
+    DSK6713_waitusec(100); // delai convenable ? -> a tester
     SPI_data &= 0x00FF;
     SPI_data |= SPI_WRITE_DATA;
 
@@ -218,7 +210,6 @@ void SPI_Write(short SPI_data)
 
     while(!MCBSP_rrdy(DSK6713_AIC23_CONTROLHANDLE));
     MCBSP_read(DSK6713_AIC23_CONTROLHANDLE);
-
 }
 
 short SPI_Read()
@@ -232,13 +223,6 @@ short SPI_Read()
     data = MCBSP_read(DSK6713_AIC23_CONTROLHANDLE);
 
     data &= SPI_READ_DATA;
-
-    /*
-    if(!is_comp)
-    {
-        data = data*256;
-    }
-    */
 
     return data;
 }
