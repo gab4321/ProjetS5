@@ -1,0 +1,4 @@
+Il est à notter que l'outil utilisé comme diagramme de Gantt est Trello. Le diagramme de Gantt fourni est donc généré par trello,
+mais il ne contient pas tous les détails qui sont présent sur ce dernier logiciel (l'outil ne le permet pas).
+Par exemple, sur le Gantt il y a une tâche "conception du traitement de signaux" qui est très vague, mais dans Trello,
+elle est explosée en plusieurs sous-tâches.
