@@ -1,0 +1,58 @@
+/* coeffsIIR.dat */
+/*
+  Créateur:    
+  Date:        
+  Revisions:   
+
+  DESCRIPTION : 
+     Information pour le fonctionnement du filtre IIR biquad
+*/	
+#ifndef COEFFSIIR_H_
+#define COEFFSIIR_H_
+
+#define IIR_NB_COEFFS 6			// Nombre total de coeffcients a & b (b0 b1 b2 a0 a1 a2)
+#define IIR_NB_FILTRES 3		// Nombre de filtres
+#define IIR_NB_SECTIONS_MAX 5	// nb de sections d'ordre 2 du plus gros filtre
+
+/* Coefficients a et b des filtres IIR d'ordre 2
+   ordre : b0 b1 b2 a0 a1 a2
+   format : 2Q13 */
+const float IIR_COEFFS[][IIR_NB_COEFFS] = {
+// 1er filtre: PASSE BAS pour singulieres
+		{0.14278,0.28692,0.14414,1,-1.5413,0.65719},
+		{0.29325,0.58997,0.29675,1,-1.1084,0.72595},
+		{0.4109,0.82179,0.4109,1,-0.58637,0.81568},
+		{0.24754,0.49401,0.24649,1,-0.20411,0.89651},
+		{0.49817,0.98783,0.4897,1,-0.012562,0.96641},
+// 2e filtre: PASSE HAUT
+		{0.38823,-0.78361,0.39542,1,-0.74955,0.36069},
+		{0.58416,-1.1577,0.57357,1,-1.6712,0.84034},
+		{0.49774,-1.0011,0.50339,1,-1.8635,0.94155},
+		{0.26257,-0.52216,0.25961,1,-1.9247,0.97556},
+		{22.724,-45.445,22.723,1,-1.9511,0.99305},
+// 2e filtre: PASSE BAS pour accords
+		{0.0070363,0.015117,0.0081236,1,-1.9136,0.91896},
+		{0.017451,0.036439,0.019092,1,-1.8947,0.9271},
+		{0.029058,0.057989,0.029099,1,-1.8665,0.94234},
+		{0.0365,0.069687,0.033392,1,-1.8436,0.963},
+		{0.27637,0.5137,0.23884,1,-1.8401,0.98718},
+	// À COMPLÉTER (NOTE : RESPECTEZ LE FORMAT 2Q13 ET METTRE LES VALEURS EN DÉCIMALE)
+        };
+
+/* Numéro de ligne de COEFFS_F correspondant à la première section d'ordre 2
+   pour chacun des filtres */
+const short IIR_NO_LIGNE[IIR_NB_FILTRES] = {0, 5, 10};
+
+// Gain global de chacun des filtres (format : 2Q13)
+const float IIR_GAINS[IIR_NB_FILTRES] = {0.10641, 0.49956, 0.0050288}; // À COMPLÉTER
+
+// Nombre de filtre d'ordre 2 pour chacune des 6 cascades de filtre
+const short IIR_NB_ORDRE2[IIR_NB_FILTRES] = {5,5,5};
+
+// Variables intermédiaires
+#pragma DATA_ALIGN(IIR_W1, 4);   // Alignement (int possède  octets)
+#pragma DATA_ALIGN(IIR_W2, 4);   // Alignement (int possède  octets)
+float IIR_W1[IIR_NB_SECTIONS_MAX][3] = {0,0,0}; 
+float IIR_W2[IIR_NB_SECTIONS_MAX][3] = {0,0,0}; 
+
+#endif /* COEFFSIIR_H */
